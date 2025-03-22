@@ -1,33 +1,40 @@
-from typing import List
+from typing import List, Optional
 from src.lib.types import Product
 
 class Utils:
     # Utility functions
     @staticmethod
-    def get_products_from_web(url:str) -> List[Product]:
+    def get_products_from_web(url:str, category:str) -> str | None:
         """
         Get products from a given URL and return a list of Product objects 
         """
         pass
 
     @staticmethod
-    def parse_html(html:str) -> List[Product]:
+    def parse_html(html: Optional[str] = None) -> Product | None:
         """
         Parse the HTML content with checking all fields are present or not and return a list of Product objects
         """
         pass
 
     @staticmethod
-    def filter_products(products:List[Product], min_price:float, max_price:float) -> List[Product]:
+    def filter_products(products: Optional[Product], min_price:float, max_price:float) -> Product | None:
         """
         Filter the products based on the price range and return a list of Product objects
         """
         pass
 
     @staticmethod
-    def sort_products(products:List[Product]) -> List[Product]:
+    def evaluate_products_with_ml(product: Optional[Product] = None) -> Product | None:
         """
-        Sort the products based on the actual price, discount, rating using random forest regressor and return a list of Product objects
+        Check the products based on the actual price, discount, rating using random forest regressor and return a list of Product objects
+        """
+        pass
+
+    @staticmethod
+    def sort_products(product: Optional[List[Product]] = None) -> List[Product] | None:
+        """
+        Sort the products based on the discount price
         """
         pass
 
@@ -40,14 +47,14 @@ class Utils:
     
     # Send message to Telegram and Twitter
     @staticmethod
-    def send_telegram_message(message:str) -> None:
+    def send_telegram_message(message: Optional[Product] = None) -> None:
         """
         Send a message to the Telegram channel
         """
         pass
 
     @staticmethod
-    def send_twitter_message(message:str) -> None:
+    def send_twitter_message(message: Optional[Product] = None) -> None:
         """
         Send a message to the Twitter channel
         """
