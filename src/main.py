@@ -1,4 +1,4 @@
-from lib.const import WEB_URLS, PRODUCT_CATEGORY, MIN_PRICE, MAX_PRICE
+from lib.const import WEB_URLS, PRODUCT_CATEGORY, MAX_PRODUCTS
 from lib.utils.utils import Utils
 from typing import Dict, List
 
@@ -10,24 +10,24 @@ def main():
 
     for url in WEB_URLS:
         for category in PRODUCT_CATEGORY:
+            page = 1
+
             while True:
                 try:
-                    if all_products.get(category) and len(all_products[category]) >= 100:
+                    if all_products.get(category) and len(all_products[category]) >= MAX_PRODUCTS:
                         break
 
-                    web_response = Utils.get_products_from_web(url, category)
-                    product = Utils.parse_html(web_response)
-                    filter_product = Utils.filter_products(product)
-                    evaluate_product = Utils.evaluate_products_with_ml(filter_product)
-                    if not evaluate_product:
-                        continue
-                    
-                    if category not in all_products:
-                        all_products[category] = [
-                            evaluate_product
-                        ]
+                    page_products = Utils.get_products_from_web(url.format(page_number = page, category = category))
+
+                    if not page_products:
+                        break
+
+                    if not all_products.get(category):
+                        all_products[category] = page_products
                     else:
-                        all_products[category].append(evaluate_product)
+                        all_products[category].extend(page_products)
+
+                    page += 1                        
                 except Exception as e:
                     print(f"Error: {e}")
                     continue

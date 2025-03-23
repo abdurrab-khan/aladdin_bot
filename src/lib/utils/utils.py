@@ -1,14 +1,36 @@
 from typing import List, Optional
 from src.lib.types import Product
+from const import MAX_PRICE, MIN_PRICE 
+from time import sleep
+
+def retry(max_retry:int):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for retry in range(max_retry):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if retry < max_retry:
+                        sleep(1)
+                        continue
+                    break
+        return wrapper
+    return decorator
 
 class Utils:
     # Utility functions
     @staticmethod
-    def get_products_from_web(url:str, category:str) -> str | None:
+    def get_products_from_web(url:str) -> List[Product] | None:
         """
         Get products from a given URL and return a list of Product objects 
         """
+        product_list = []
+        max_retry = 3
+
+        @retry(max_retry)
         pass
+
+        return product_list
 
     @staticmethod
     def parse_html(html: Optional[str] = None) -> Product | None:
