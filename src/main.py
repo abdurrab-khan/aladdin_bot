@@ -1,4 +1,5 @@
 from lib.const import WEB_URLS, PRODUCT_CATEGORY, MAX_PRODUCTS
+from lib.types import ProductSearchResult
 from lib.utils.utils import Utils
 from typing import Dict, List
 
@@ -17,15 +18,15 @@ def main():
                     if all_products.get(category) and len(all_products[category]) >= MAX_PRODUCTS:
                         break
 
-                    page_products = Utils.get_products_from_web(url.format(page_number = page, category = category))
+                    search_result:ProductSearchResult = Utils.get_products_from_web(url.format(page_number = page, category = category))
 
-                    if not page_products:
+                    if search_result.is_last_page or not search_result.products or not search_result:
                         break
 
                     if not all_products.get(category):
-                        all_products[category] = page_products
+                        all_products[category] = search_result.products
                     else:
-                        all_products[category].extend(page_products)
+                        all_products[category].extend(search_result.products)
 
                     page += 1                        
                 except Exception as e:
