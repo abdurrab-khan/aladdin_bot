@@ -1,6 +1,6 @@
 from typing import List, TypedDict, Union
+from typing_extensions import NotRequired
 from enum import Enum
-
 
 class Product(TypedDict):
     product_name: str
@@ -9,6 +9,11 @@ class Product(TypedDict):
     product_rating: Union[float, None]
     product_url: str
     product_image: str
+    product_color: NotRequired[str]
+
+class ProductVariants(TypedDict):
+    base_product_name: str
+    variants: List[Product]
 
 class ProductSearchResult:
     is_last_page: bool
@@ -19,3 +24,7 @@ class Websites(Enum):
     FLIPKART = "flipkart"
     MYNTRA = "myntra"
     AJIO = "ajio"
+
+class SendMessageTo(Enum):
+    TELEGRAM = "telegram"
+    TWITTER = "twitter"
