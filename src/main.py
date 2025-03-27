@@ -1,6 +1,4 @@
-from lib.const import WEB_URLS, PRODUCT_CATEGORY, MAX_PRODUCTS
-from lib.types import ProductSearchResult
-from lib.utils.utils import Utils
+from .lib import WEB_URLS, PRODUCT_CATEGORY, MAX_PRODUCTS, ProductSearchResult, Utils
 
 
 def main():

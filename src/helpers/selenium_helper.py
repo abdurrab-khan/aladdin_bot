@@ -2,8 +2,9 @@ from time import sleep
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from helpers.helper_functions import HelperFunctions
-from lib.types import ProductSearchResult, Websites
+from .helper_functions import HelperFunctions
+from ..lib import ProductSearchResult, Websites
+
 
 class SeleniumHelper:
     def __init__(self):
@@ -22,14 +23,15 @@ class SeleniumHelper:
         try:
             self.driver.get(url)
             sleep(2)
-            product_list = self.extract_products_by_website(self.driver, website_name)
+            product_list = self.extract_products_by_website(
+                self.driver, website_name)
             return product_list
         except Exception as e:
             return None
         finally:
             self.driver.quit()
 
-    def extract_products_by_website(driver:Chrome, website_name: Websites) -> ProductSearchResult | None:
+    def extract_products_by_website(driver: Chrome, website_name: Websites) -> ProductSearchResult | None:
         """
         Get products from a given URL and return a list of Product objects 
         """
@@ -48,4 +50,3 @@ class SeleniumHelper:
                 return []
             case _:
                 return None
-       

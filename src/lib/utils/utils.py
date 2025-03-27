@@ -1,7 +1,6 @@
 from typing import List, Optional
-from helpers.helper_functions import HelperFunctions, retry
-from helpers.selenium_helper import SeleniumHelper
-from src.lib.types import Product, ProductSearchResult, ProductVariants, Websites
+from ...helpers import HelperFunctions, retry, SeleniumHelper
+from ...lib import Product, ProductSearchResult, ProductVariants, Websites
 
 
 class Utils:

@@ -1,10 +1,8 @@
-from ctypes.wintypes import MSG
 from time import sleep
-from lib.const import MSG_TEMPLATE_BY_NAME, IMAGE_PATH
-from lib.types import ProductVariants, SendMessageTo, Product
-from ml_model.predict_deal import predict_deal
 from typing import Optional
 from os import path, makedirs
+from ..ml_model.predict_deal import predict_deal
+from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product
 # Decorators
 
 
