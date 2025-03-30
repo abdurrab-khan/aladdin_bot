@@ -34,10 +34,9 @@ def main():
 
     for category in all_products:
         products = all_products[category]
-        sorted_products = Utils.sort_products(products)
-        filtered_products = Utils.filter_products(sorted_products)
+        final_products = Utils.sort_products(products)
 
-        for product in filtered_products:
+        for product in final_products:
             if product is None:
                 return
 

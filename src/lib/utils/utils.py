@@ -21,22 +21,27 @@ class Utils:
         return get_products(url, website_name)
 
     @staticmethod
-    def filter_products(product: Optional[List[Product]] = None) -> List[Product | ProductVariants] | None:
+    def filter_products(products: List[Product]) -> List[Product | ProductVariants] | None:
         """
         Filter the products based on the product title and price. If the product is same with same price, but different color then keep in single list.
         """
-        if product is None:
+        return
+
+    @staticmethod
+    def sort_products(products: Optional[List[Product]] = None) -> List[Product | ProductVariants] | None:
+        """
+        Sort the products based on the discount price and filter them
+        """
+        if products is None:
             return None
 
-    @staticmethod
-    def sort_products(product: Optional[List[Product]] = None) -> List[Product] | None:
-        """
-        Sort the products based on the discount price
-        """
-        pass
+        sorted_products = sorted(products, key=lambda p: p["product_discount"])
+        filtered_products = HelperFunctions.filter_products(sorted_products)
+
+        return filtered_products
 
     @staticmethod
-    def download_images(product: Product | ProductVariants) -> str | List[str]:
+    def download_images(products: Product | ProductVariants) -> str | List[str]:
         """
         Download the images of the product
         """

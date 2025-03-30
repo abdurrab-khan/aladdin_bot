@@ -1,8 +1,11 @@
+from ast import List
 from time import sleep
 from typing import Optional
 from os import path, makedirs
 from ..ml_model.predict_deal import predict_deal
-from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product
+from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product, COLORS, UNWANTED_CHARS
+from re import sub, IGNORECASE, search
+
 # Decorators
 
 
@@ -36,6 +39,44 @@ def format_message(sendTo: SendMessageTo, product_name: str, product_price: str,
 
 
 class HelperFunctions:
+    @staticmethod
+    def normalize_name(product_name):
+        """
+        Normalize the product name by removing colors, numbers, and unwanted characters.
+        """
+        colors = rf"\b({COLORS})\b"
+        numbers = r"\d+"
+
+        # Remove Colors from product name (with word boundaries)
+        product_name = sub(colors, "", product_name, flags=IGNORECASE)
+
+        # Remove Numbers from product name
+        product_name = sub(numbers, "", product_name)
+
+        # Remove unwanted_characters from product name
+        product_name = sub(UNWANTED_CHARS, "", product_name)
+
+        # Remove Multiple Spaces
+        product_name = sub(r"\s+", " ", product_name)
+
+        return product_name.strip()
+
+    @staticmethod
+    def get_product_color(product_name):
+        """
+        Get the color of the product from the product name.
+        """
+        colors = rF"\b({COLORS}\d+)\b"
+
+        color_match = search(colors, product_name, flags=IGNORECASE)
+
+        if color_match:
+            matched_color = color_match.group(0).strip()
+
+            return matched_color.lower()
+        else:
+            return ""
+
     @staticmethod
     def short_url_with_affiliate_code(url: str) -> str:
         """
