@@ -40,10 +40,7 @@ def main():
             if product is None:
                 return
 
-            image_path = Utils.download_images(product)
-
-            if not image_path or not image_path[0]:
-                continue
+            image_path = product['product_image']
 
             Utils.send_telegram_message(product, image_path)
             Utils.send_twitter_message(product, image_path)

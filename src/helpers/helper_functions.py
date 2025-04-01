@@ -1,26 +1,35 @@
-from ast import List
 from time import sleep
 from typing import Optional
 from os import path, makedirs
 from ..ml_model.predict_deal import predict_deal
 from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product, COLORS, UNWANTED_CHARS
 from re import sub, IGNORECASE, search
+from requests import get
+from datetime import datetime
+from logging import warning, info, error, basicConfig, INFO
+
+basicConfig(
+    level=INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Decorators
 
 
-def retry(max_retry: int):
+def retry(max_retries: int):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            for retry_count in range(max_retry):
+            for retry_count in range(max_retries):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
-                    if retry_count < max_retry - 1:
-                        sleep(1)
-                        continue
-                    raise  # Re-raise the last exception
-            return None  # This line is actually unreachable
+                    if retry_count < max_retries - 1:
+                        wait_time = 2 ** retry_count
+                        warning(
+                            f"Attempt {retry_count + 1}/{max_retries} failed: {str(e)}. Retrying in {wait_time} seconds...")
+                        sleep(wait_time)
+                    else:
+                        raise
         return wrapper
     return decorator
 
@@ -40,7 +49,7 @@ def format_message(sendTo: SendMessageTo, product_name: str, product_price: str,
 
 class HelperFunctions:
     @staticmethod
-    def normalize_name(product_name):
+    def normalize_name(product_name) -> str:
         """
         Normalize the product name by removing colors, numbers, and unwanted characters.
         """
@@ -48,13 +57,13 @@ class HelperFunctions:
         numbers = r"\d+"
 
         # Remove Colors from product name (with word boundaries)
-        product_name = sub(colors, "", product_name, flags=IGNORECASE)
+        product_name = sub(colors, " ", product_name, flags=IGNORECASE)
 
         # Remove Numbers from product name
-        product_name = sub(numbers, "", product_name)
+        product_name = sub(numbers, " ", product_name)
 
         # Remove unwanted_characters from product name
-        product_name = sub(UNWANTED_CHARS, "", product_name)
+        product_name = sub(UNWANTED_CHARS, " ", product_name)
 
         # Remove Multiple Spaces
         product_name = sub(r"\s+", " ", product_name)
@@ -62,7 +71,7 @@ class HelperFunctions:
         return product_name.strip()
 
     @staticmethod
-    def get_product_color(product_name):
+    def get_product_color(product_name) -> str | None:
         """
         Get the color of the product from the product name.
         """
@@ -75,7 +84,7 @@ class HelperFunctions:
 
             return matched_color.lower()
         else:
-            return ""
+            return None
 
     @staticmethod
     def short_url_with_affiliate_code(url: str) -> str:
@@ -156,5 +165,52 @@ class HelperFunctions:
         return message
 
     @staticmethod
-    def save_image(url: str) -> str:
-        pass
+    def download_image(image_url: str) -> str | None:
+        """
+        Download an image from a URL with error handling and retries.
+
+        Returns:
+            str: Path to downloaded image, or empty string if download failed
+        """
+        makedirs(path.dirname(IMAGE_PATH), exist_ok=True)
+        current_time = int(datetime.timestamp(datetime.now()))
+        SAVE_PATH = f"{IMAGE_PATH}/{current_time}.jpg"
+
+        @retry(4)
+        def download():
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like    Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+
+            # Make the request with timeout
+            response = get(
+                image_url, headers=headers, timeout=10, stream=True)
+
+            # Check if response is successful
+            response.raise_for_status()
+
+            # Verify content type is an image
+            content_type = response.headers.get('Content-Type', '')
+            if not content_type.startswith('image/'):
+                warning(
+                    f"URL does not contain an image (Content-Type: {content_type})")
+                return False
+
+            # Save the image
+            with open(SAVE_PATH, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
+            image_size = path.getsize(SAVE_PATH)
+            info(
+                f"Successfully downloaded {image_url} ({image_size} bytes) to {SAVE_PATH}")
+            return True
+
+        try:
+            success = download()
+            if success:
+                return SAVE_PATH
+            else:
+                return None
+        except Exception as e:
+            error(f"Failed to download image after multiple attempts: {e}")
+            return None

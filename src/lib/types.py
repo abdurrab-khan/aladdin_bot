@@ -1,4 +1,3 @@
-from encodings.punycode import T
 from typing import List, TypedDict, Union
 from typing_extensions import NotRequired
 from enum import Enum
@@ -11,11 +10,13 @@ class Product(TypedDict):
     product_rating: Union[float, None]
     product_url: str
     product_image: str
+    product_category: str
     product_color: NotRequired[str]
 
 
 class ProductVariants(TypedDict):
-    base_product_name: str
+    base_name: str
+    list_images: List[str]
     variants: List[Product]
 
 
