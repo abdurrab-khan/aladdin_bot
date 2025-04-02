@@ -15,7 +15,7 @@ class Utils:
         max_retry = 3
 
         @retry(max_retry)
-        def get_products(url: str, website_name: Websites) -> List[Product] | None:
+        def get_products() -> List[Product] | None:
             selenium_helper = SeleniumHelper()
             return selenium_helper.get_products(url, website_name)
 

@@ -39,6 +39,7 @@ def format_message(sendTo: SendMessageTo, product_name: str, product_price: str,
         product_name=product_name,
         product_price=product_price,
         product_discount=product_discount,
+        stars=product_rating * '⭐',
         product_rating=product_rating,
         product_discount_percentage=product_discount_percentage,
         product_url=product_url

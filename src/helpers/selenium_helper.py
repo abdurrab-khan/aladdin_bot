@@ -1,4 +1,5 @@
 from time import sleep
+from bs4 import BeautifulSoup
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -23,15 +24,20 @@ class SeleniumHelper:
         try:
             self.driver.get(url)
             sleep(2)
-            product_list = self.extract_products_by_website(
-                self.driver, website_name)
-            return product_list
+            html = self.driver.page_source
+
+            if html is None:
+                raise ("HTML is not found something goes wrong.")
+
+            soup = BeautifulSoup(html, "html.parse")
+
+            return self.extract_products_by_website(soup, website_name)
         except Exception as e:
             return None
         finally:
             self.driver.quit()
 
-    def extract_products_by_website(driver: Chrome, website_name: Websites) -> ProductSearchResult | None:
+    def extract_products_by_website(self, soup: BeautifulSoup, website_name: Websites) -> ProductSearchResult | None:
         """
         Get products from a given URL and return a list of Product objects 
         """

@@ -13,7 +13,7 @@ def main():
 
             while True:
                 try:
-                    if all_products.get(category) and len(all_products[category]) >= MAX_PRODUCTS:
+                    if all_products.get(category) and len(all_products[category]) >= MAX_PRODUCTS[category]:
                         break
 
                     search_result: ProductSearchResult = Utils.get_products_from_web(

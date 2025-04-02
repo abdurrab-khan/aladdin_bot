@@ -10,7 +10,6 @@ class Product(TypedDict):
     product_rating: Union[float, None]
     product_url: str
     product_image: str
-    product_category: str
     product_color: NotRequired[str]
 
 
