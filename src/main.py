@@ -9,28 +9,14 @@ def main():
 
     for url in WEB_URLS:
         for category in PRODUCT_CATEGORY:
-            page = 1
+            try:
+                search_result: ProductSearchResult = Utils.get_products_from_web(
+                    url.format(category=category))
 
-            while True:
-                try:
-                    if all_products.get(category) and len(all_products[category]) >= MAX_PRODUCTS[category]:
-                        break
-
-                    search_result: ProductSearchResult = Utils.get_products_from_web(
-                        url.format(page_number=page, category=category))
-
-                    if search_result.is_last_page or not search_result.products or not search_result:
-                        break
-
-                    if not all_products.get(category):
-                        all_products[category] = search_result.products
-                    else:
-                        all_products[category].extend(search_result.products)
-
-                    page += 1
-                except Exception as e:
-                    print(f"Error: {e}")
-                    continue
+                all_products[category] = search_result.products
+            except Exception as e:
+                print(f"Error: {e}")
+                continue
 
     for category in all_products:
         products = all_products[category]

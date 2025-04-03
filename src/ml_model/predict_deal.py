@@ -1,6 +1,6 @@
 from pandas import DataFrame
 from joblib import load
-from ..lib import Product
+from src.lib import Product
 from os import path
 
 

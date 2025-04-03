@@ -1,4 +1,4 @@
-from typing import List, TypedDict, Union
+from typing import List, TypedDict, Union, Literal
 from typing_extensions import NotRequired
 from enum import Enum
 
@@ -11,6 +11,12 @@ class Product(TypedDict):
     product_url: str
     product_image: str
     product_color: NotRequired[str]
+
+
+ProductKeys = Literal[
+    "product_name", "product_price", "product_discount",
+    "product_rating", "product_url", "product_image", "product_color"
+]
 
 
 class ProductVariants(TypedDict):

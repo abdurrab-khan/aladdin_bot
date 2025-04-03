@@ -2,11 +2,12 @@ from time import sleep
 from typing import Optional
 from os import path, makedirs
 from ..ml_model.predict_deal import predict_deal
-from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product, COLORS, UNWANTED_CHARS
+from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product, COLORS, UNWANTED_CHARS, Websites, AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, AJIO_AFFILIATE_ID
 from re import sub, IGNORECASE, search
 from requests import get
 from datetime import datetime
 from logging import warning, info, error, basicConfig, INFO
+from urllib.parse import unquote
 
 basicConfig(
     level=INFO,
@@ -46,6 +47,18 @@ def format_message(sendTo: SendMessageTo, product_name: str, product_price: str,
     )
 
     return message
+
+
+def extract_amazon_product_id(url):
+    decoded_url = unquote(url)
+    pattern = r'/dp/([a-zA-Z0-9]{10})'
+
+    match = search(pattern, decoded_url)
+
+    if match:
+        return match.group(1)
+    else:
+        raise (f"Invalid Amazon URL: {url}")
 
 
 class HelperFunctions:
@@ -88,12 +101,24 @@ class HelperFunctions:
             return None
 
     @staticmethod
-    def short_url_with_affiliate_code(url: str) -> str:
+    def short_url_with_affiliate_code(url: str, website: Websites) -> str:
         """
         Shorten the URL and add affiliate code to the URL
         """
-        # Implementation for URL shortening
-        return url
+        match website:
+            case Websites.AMAZON:
+                product_id = extract_amazon_product_id(url)
+                short_url = f"https://www.amazon.in/dp/{product_id}/{AMAZON_AFFILIATE_ID}"
+                return short_url
+            case Websites.FLIPKART:
+                short_url = f"https://www.flipkart.com{url.split("?")[0]}/{FLIPKART_AFFILIATE_ID}"
+                return short_url
+            case Websites.MYNTRA:
+                return f"https://www.myntra.com{url}/{MYNTRA_AFFILIATE_ID}"
+            case Websites.AJIO:
+                pass
+            case _:
+                raise ValueError("Invalid website specified")
 
     @staticmethod
     def evaluate_products_with_ml(product: Optional[Product] = None) -> Optional[Product]:

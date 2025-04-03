@@ -2,6 +2,7 @@ from typing import List, Optional
 from time import sleep
 from ...helpers import HelperFunctions, retry, SeleniumHelper
 from ...lib import Product, ProductSearchResult, ProductVariants, Websites
+from random import uniform
 
 
 class Utils:
