@@ -1,9 +1,10 @@
 from calendar import c
 from enum import Enum
 from itertools import product
+from logging import warning
 from re import search
 from time import sleep
-from typing import Dict, Literal, NotRequired, TypedDict, Union, List
+from typing import Dict, Literal, NotRequired, Optional, TypedDict, Union, List
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from selenium.webdriver import Chrome
@@ -32,12 +33,22 @@ class Websites(Enum):
 
 
 Product_key = Literal[
-    "product_name", "product_price", "product_discount",
-    "product_rating", "product_url", "product_image", "product_color"
+    "product_name",
+    "product_price",
+    "product_discount",
+    "product_rating",
+    "product_url",
+    "product_image",
+    "product_color"
 ]
 
-REQUIRED_PRODUCT_KEYS = ["product_name", "product_price",
-                         "product_image", "product_rating", "product_url"]
+REQUIRED_PRODUCT_KEYS = [
+    "product_name",
+    "product_price",
+    "product_image",
+    "product_rating",
+    "product_url"
+]
 
 
 PRODUCT_DETAILS: Dict[Websites, Dict[Product_key, List[str]]] = {
@@ -50,12 +61,12 @@ PRODUCT_DETAILS: Dict[Websites, Dict[Product_key, List[str]]] = {
         "product_url": ["a.a-link-normal.s-line-clamp-2.s-link-style.a-text-normal", "a.a-link-normal"],
     },
     Websites.FLIPKART: {
-        "product_name": ["a.wjcEIp"],
-        "product_price": ["div.yRaY8j"],
-        "product_discount": ["div.Nx9bqj"],
-        "product_image": ["a.VJA3rP div._4WELSP img"],
+        "product_name": ["span.VU-ZEz"],
+        "product_price": [r"div.yRaY8j"],
+        "product_discount": ["div.Nx9bqj.CxhGGd"],
+        "product_image": ["div._8id3KM img"],
         "product_rating": ["div.XQDdHH"],
-        "product_url": ["a.VJA3rP"],
+        "product_url": ["a.rPDeLR"],
     },
     Websites.MYNTRA: {
         "product_name": ["h4.product-product"],
@@ -64,27 +75,47 @@ PRODUCT_DETAILS: Dict[Websites, Dict[Product_key, List[str]]] = {
         "product_image": ["div.product-imageSliderContainer img"],
         "product_rating": ["div.product-ratingsContainer span"],
         "product_url": ["a"],
-    }
+    },
+    Websites.AJIO: None
+
 }
 
 PRODUCT_CONTAINER: Dict[Websites, str] = {
     Websites.AMAZON: ".s-main-slot.s-result-list",
-    Websites.FLIPKART: "div.DOjaWF.gdgoEp",
+    Websites.FLIPKART: "div.DOjaWF.gdgoEp:not(.col-2-12):not(.col-12-12), div.DOjaWF.YJG4Cf",
     Websites.MYNTRA: "ul.results-base",
-    Websites.AJIO: "div.item-list",
+    Websites.AJIO: None,
 }
 
 PRODUCT_CARDS: Dict[Websites, str] = {
     Websites.AMAZON: "div.a-section.a-spacing-base",
-    Websites.FLIPKART: "div.slAVV4",
+    Websites.FLIPKART: "div._1sdMkc.LFEi7Z",
     Websites.MYNTRA: "li.product-base",
-    Websites.AJIO: "div.item-list",
+    Websites.AJIO: None,
 }
 
 # FUNCTIONS AND METHODS.
 AMAZON_AFFILIATE_ID = "?tag=aladdinloot3-21"
 FLIPKART_AFFILIATE_ID = "?affid=admitad&affExtParam1=298614"
 MYNTRA_AFFILIATE_ID = "?utm_source=admitad&utm_medium=affiliate"
+
+
+def retry(max_retries: int):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for retry_count in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if retry_count < max_retries - 1:
+                        wait_time = 2 ** retry_count
+                        warning(
+                            f"Attempt {retry_count + 1}/{max_retries} failed: {str(e)}. Retrying in {wait_time} seconds...")
+                        sleep(wait_time)
+                    else:
+                        raise
+        return wrapper
+    return decorator
 
 
 def extract_amazon_product_id(url):
@@ -104,9 +135,10 @@ class SeleniumHelper:
         """
         Initialize the WebDriver with Chrome options and navigate to the URL
         """
+        self.products: List[Product] = []
         self.website_name = website_name
-        chrome_options = Options()
 
+        chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -127,92 +159,104 @@ class SeleniumHelper:
         # Set window size to appear more like a real browser
         self.driver.set_window_size(1920, 1080)
 
-    def get_products(self, url: str):
+    def get_products(self, url: str) -> List[Product] | None:
+        """
+        Get products details from a given URL and return a list of Product objects.
+
+        args:
+            url (str): The URL to scrape products from.
+
+        return:
+            List[Product] | None: A list of Product objects or None if no products found.
+        """
+
         try:
-            self.driver.get(url)
-            try:
-                WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, PRODUCT_CONTAINER[self.website_name]))
-                )
+            main_container = self.fetch_product_container(url)
 
-                sleep(random.uniform(1, 2))
+            if main_container != None:
+                self.extract_products_by_website(main_container)
 
-            except Exception as wait_error:
-                print(f"Wait error: {wait_error}")
-
-            html = self.driver.page_source
-
-            if html is None:
-                raise Exception("Something went wrong HTML is not found.")
-
-            soup = BeautifulSoup(html, "html.parser")
-
-            container = soup.select_one(
-                PRODUCT_CONTAINER[self.website_name]) if self.website_name != Websites.FLIPKART else soup.select_one(f"{PRODUCT_CONTAINER[self.website_name]}:not(.col-2-12):not(.col-12-12)")
-
-            if container != None:
-                product_data = self.extract_products_by_website(container)
-
-                return product_data
+                return self.products
         except Exception as e:
-            raise Exception(f"Something went wrong: {e}")
+            raise Exception(f"Error occurred while getting products: {str(e)}")
+
         finally:
             self.driver.quit()
 
     def extract_products_by_website(self, main_container: BeautifulSoup):
         """
-        Get products from a given URL and return a list of Product objects.
+        Extract product details from the main container based on the website.
+
+        args:
+            main_container (BeautifulSoup): The main container element containing product cards.
+
+        return:
+            None
         """
-        list_products = []
-        all_product_cards = main_container.select(
+        product_cards = main_container.select(
             PRODUCT_CARDS[self.website_name])
 
-        if not all_product_cards:
+        if not product_cards:
             raise Exception("No product cards found.")
 
-        for product in all_product_cards:
-            product_info = {}
+        for product_soup in product_cards:
+            product_details = {}
+            product_url = product_soup.select_one(" ,".join(
+                PRODUCT_DETAILS[Websites.FLIPKART]['product_url'])) if self.website_name == Websites.FLIPKART else None
+            flipkart_product_soup = self.get_flipkart_data(product_url)
+
             for key, selectors in PRODUCT_DETAILS[self.website_name].items():
-                elements = product.select_one(" ,".join(selectors))
-
-                if elements:
-                    if key == "product_price" or key == "product_discount":
-                        price_data = elements.get_text(strip=True)
-                        product_info[key] = self.get_element_value_by_selector(
-                            key, price_data)
-
-                    elif key == "product_image":
-                        product_info[key] = elements["src"]
-
-                    elif key == "product_rating":
-                        rating_text = elements.get_text(strip=True)
-                        product_info[key] = self.get_element_value_by_selector(
-                            key, rating_text)
-
-                    elif key == "product_url":
-                        url = elements['href']
-                        short_url = self.short_url_with_affiliate_code(url)
-                        product_info[key] = short_url
-
-                    else:
-                        product_info[key] = elements.get_text(strip=True)
+                if self.website_name == Websites.FLIPKART:
+                    elements = flipkart_product_soup.select_one(
+                        " ,".join(selectors))
                 else:
+                    elements = product_soup.select_one(" ,".join(selectors))
+
+                if elements is None and key != "product_url":
                     continue
 
-            if None in [product_info.get(key) for key in REQUIRED_PRODUCT_KEYS]:
-                predict_deal = "Best Deal"
+                if key == "product_price" or key == "product_discount":
+                    price_data = elements.get_text(strip=True)
+                    product_details[key] = self.format_extracted_data(
+                        key, price_data)
 
-                if predict_deal == "Best Deal":
-                    list_products.append(product_info)
+                elif key == "product_image":
+                    product_details[key] = elements["src"]
+
+                elif key == "product_rating":
+                    rating_text = elements.get_text(strip=True)
+                    product_details[key] = self.format_extracted_data(
+                        key, rating_text)
+
+                elif key == "product_url":
+                    url = elements['href'] if self.website_name != Websites.FLIPKART else product_url["href"]
+                    short_url = self.short_url_with_affiliate_code(url)
+                    product_details[key] = short_url
+
                 else:
-                    continue
+                    product_details[key] = elements.get_text(strip=True)
+
+            if None in [product_details.get(key) for key in REQUIRED_PRODUCT_KEYS]:
+                continue
+
+            predict_deal = "Best Deal"
+
+            if predict_deal == "Best Deal":
+                self.products.append(product_details)
             else:
                 continue
 
-        return list_products
+    def format_extracted_data(self, selector: Product_key, element_data: str) -> Union[float, int, None]:
+        """
+        Format the extracted data based on the selector type.
 
-    def get_element_value_by_selector(self, selector: Product_key, element_data: str):
+        args:
+            selector (Product_key): The type of data to format.
+            element_data (str): The extracted data to format.
+
+        return:
+            Union[float, int, None]: The formatted data.
+        """
         if element_data is None:
             return None
 
@@ -226,10 +270,10 @@ class SeleniumHelper:
 
             case Websites.FLIPKART:
                 if selector == "product_price" or selector == "product_discount":
-                    pass
+                    return int(float(element_data.replace(",", "").replace("₹", "")))
 
                 elif selector == "product_rating":
-                    pass
+                    return float(element_data)
 
             case Websites.MYNTRA:
                 if selector == "product_price" or selector == "product_discount":
@@ -243,27 +287,84 @@ class SeleniumHelper:
 
     def short_url_with_affiliate_code(self, url: str) -> str:
         """
-        Shorten the URL and add affiliate code to the URL
+        Generate a short URL with the affiliate code based on the website.
+
+        args:
+            url (str): The original URL to shorten.
+
+        return:
+            str: The short URL with the affiliate code.
         """
         match self.website_name:
             case Websites.AMAZON:
                 product_id = extract_amazon_product_id(url)
                 short_url = f"https://www.amazon.in/dp/{product_id}/{AMAZON_AFFILIATE_ID}"
                 return short_url
+
             case Websites.FLIPKART:
                 short_url = f"https://www.flipkart.com{url.split("?")[0]}/{FLIPKART_AFFILIATE_ID}"
                 return short_url
+
             case Websites.MYNTRA:
-                return f"https://www.myntra.com{url}/{MYNTRA_AFFILIATE_ID}"
+                return f"https://www.myntra.com/{url}/{MYNTRA_AFFILIATE_ID}"
+
             case Websites.AJIO:
                 pass
             case _:
                 raise ValueError("Invalid website specified")
 
+    def get_flipkart_data(self, url: Optional[str] = None) -> BeautifulSoup | None:
+        """
+        Get the main container for Flipkart products to get the product details efficiently.
+
+        args:
+            url (str): The URL to scrape products from.
+
+        return:
+            BeautifulSoup | None: The main container element containing product cards.
+        """
+        if self.website_name != Websites.FLIPKART or url is None:
+            return None
+        url = f"https://www.flipkart.com{url["href"].split("?")[0]}"
+
+        main_container = self.fetch_product_container(url)
+        if main_container is None:
+            raise Exception(
+                "Due to some reason does not getting Container.")
+
+        return main_container
+
+    @retry(3)
+    def fetch_product_container(self, url: str) -> BeautifulSoup | None:
+        """
+        Fetches and returns the main product container from the specified website URL.
+
+        args:
+            url (str): The URL to scrape products from.
+
+        return:
+            BeautifulSoup | None: The main container element containing product cards.
+        """
+        self.driver.get(url)
+        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, PRODUCT_CONTAINER[self.website_name])))
+
+        sleep(random.uniform(0.5, 1.5))
+
+        html = self.driver.page_source
+
+        if html is None:
+            raise Exception("Failed to retrieve HTML page content.")
+
+        soup = BeautifulSoup(html, 'html.parser')
+        main_container = soup.select_one(PRODUCT_CONTAINER[self.website_name])
+
+        return main_container
+
 
 if __name__ == "__main__":
-    sel = SeleniumHelper(Websites.MYNTRA)
+    sel = SeleniumHelper(Websites.AMAZON)
     list_products = sel.get_products(
-        url="https://www.myntra.com/jeans")
+        url="https://www.amazon.in/s?k=jeans&crid=2TGODIWQ3XENE&sprefix=jean%2Caps%2C216&ref=nb_sb_noss_1")
 
     print(list_products)

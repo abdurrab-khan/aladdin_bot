@@ -1,6 +1,6 @@
 from pandas import DataFrame
 from joblib import load
-from src.lib import Product
+from ..lib import Product
 from os import path
 
 
@@ -48,3 +48,17 @@ def predict_deal(product_data: Product):
         results.append(result)
 
     return results[0]
+
+
+print(predict_deal({
+    'product_price': 100,
+    'product_discount': 20,
+    'product_category': 'Electronics',
+    'product_brand': 'BrandX',
+    'product_rating': 4.5,
+    'product_reviews': 100,
+    'product_age': 1,
+    'product_weight': 1.5,
+    'discount_percentage': 20,
+    'discount_amount': 80
+}))
