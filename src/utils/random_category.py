@@ -31,7 +31,6 @@ random_mens_accessories = [
     ProductCategories.PERFUME,
 ]
 
-
 daily_categories = {
     "saturday": [
         "t-shirt",
