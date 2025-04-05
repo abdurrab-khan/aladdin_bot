@@ -1,6 +1,6 @@
 from pandas import DataFrame
 from joblib import load
-from ..lib import Product
+from ..types import Product
 from os import path
 
 
@@ -19,9 +19,16 @@ def load_model(model_path='best_deal_model.pkl', feature_names_path='feature_nam
     return model, feature_names
 
 
-def predict_deal(product_data: Product):
-    """Make prediction for a single product or multiple products"""
+def predict_deal(product_data: Product) -> dict['prediction': str, 'confidence': float]:
+    """
+    Predict if the product is a best deal or not.
 
+    args:
+        product_data (Product): The product data to predict on.
+
+    return:
+        dict: A dictionary containing the prediction and confidence score.
+    """
     model, feature_names = load_model()
     if isinstance(product_data, dict):
         product_data = DataFrame([product_data])
@@ -48,17 +55,3 @@ def predict_deal(product_data: Product):
         results.append(result)
 
     return results[0]
-
-
-print(predict_deal({
-    'product_price': 100,
-    'product_discount': 20,
-    'product_category': 'Electronics',
-    'product_brand': 'BrandX',
-    'product_rating': 4.5,
-    'product_reviews': 100,
-    'product_age': 1,
-    'product_weight': 1.5,
-    'discount_percentage': 20,
-    'discount_amount': 80
-}))

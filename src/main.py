@@ -1,23 +1,27 @@
-from .lib import WEB_URLS, ProductSearchResult, Utils
+from .lib import Websites, COMMON_URLS
+from .utils import Utils, get_daily_category
 
 
-def main():
+def main(all_website, all_category):
     """
     Main function of the application that is called when the application is run.
     """
     all_products = {}
-    product_category = ""
 
-    for url in WEB_URLS:
-        for category in product_category:
+    for web in all_website:
+        for category in all_category:
+            url = COMMON_URLS[web].format(category=category.value)
+            print(f"URLS:: {url}")
             try:
-                search_result: ProductSearchResult = Utils.get_products_from_web(
-                    url.format(category=category))
+                search_result = Utils.get_products_from_web(
+                    url, web, category)
 
-                all_products[category] = search_result.products
+                all_products[category] = search_result
             except Exception as e:
                 print(f"Error: {e}")
                 continue
+
+    print(all_products)
 
     for category in all_products:
         products = all_products[category]
@@ -34,4 +38,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    all_category = get_daily_category()
+    # all_website = [web for web in Websites]
+
+    # if all_category is None:
+    #     exit(1)
+
+    # main(all_website, all_category)
+    print("hello world")
+    print(all_category)

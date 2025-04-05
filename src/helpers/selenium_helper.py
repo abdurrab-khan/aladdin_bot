@@ -1,7 +1,9 @@
+from itertools import product
 from logging import warning
 from re import search
 from time import sleep
 from typing import Optional, Union, List
+from random import choice, uniform
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from selenium.webdriver import Chrome
@@ -9,11 +11,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from lib import FLIPKART_AFFILIATE_ID, AMAZON_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS, REQUIRED_PRODUCT_KEYS, Websites, ProductKey, Product, retry
-from random import uniform, choice
+from .helper_functions import retry
+from ..lib import FLIPKART_AFFILIATE_ID, AMAZON_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS, REQUIRED_PRODUCT_KEYS, MAX_PRODUCT_PRICE, ProductCategories, Websites, ProductKey, Product
+from ..lib.ml_model.predict_deal import predict_deal
 
 
-def extract_amazon_product_id(url):
+def extract_amazon_product_id(url) -> str | None:
     decoded_url = unquote(url)
     pattern = r'/dp/([a-zA-Z0-9]{10})'
 
@@ -22,16 +25,17 @@ def extract_amazon_product_id(url):
     if match:
         return match.group(1)
     else:
-        raise (f"Invalid Amazon URL: {url}")
+        return None
 
 
 class SeleniumHelper:
-    def __init__(self, website_name: Websites):
+    def __init__(self, website_name: Websites, category: ProductCategories):
         """
-        Initialize the WebDriver with Chrome options and navigate to the URL
-        """
+            Initialize the WebDriver with Chrome options and navigate to the URL
+            """
         self.products: List[Product] = []
         self.website_name = website_name
+        self.category = category
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")
@@ -48,10 +52,7 @@ class SeleniumHelper:
         ]
         chrome_options.add_argument(f"user-agent={choice(user_agents)}")
 
-        # Initialize the WebDriver
         self.driver = Chrome(options=chrome_options)
-
-        # Set window size to appear more like a real browser
         self.driver.set_window_size(1920, 1080)
 
     def get_products(self, url: str) -> List[Product] | None:
@@ -95,7 +96,7 @@ class SeleniumHelper:
             raise Exception("No product cards found.")
 
         for product_soup in product_cards:
-            product_details = {}
+            product_details: Product = {}
             product_url = product_soup.select_one(" ,".join(
                 PRODUCT_DETAILS[Websites.FLIPKART]['product_url'])) if self.website_name == Websites.FLIPKART else None
             flipkart_product_soup = self.get_flipkart_data(product_url)
@@ -134,9 +135,8 @@ class SeleniumHelper:
             if None in [product_details.get(key) for key in REQUIRED_PRODUCT_KEYS]:
                 continue
 
-            predict_deal = "Best Deal"
-
-            if predict_deal == "Best Deal":
+            prediction = predict_deal(product_details)
+            if prediction['prediction'] == "Best Deal" and MAX_PRODUCT_PRICE[self.category] >= product_details["product_price"]:
                 self.products.append(product_details)
             else:
                 continue
@@ -193,7 +193,7 @@ class SeleniumHelper:
         match self.website_name:
             case Websites.AMAZON:
                 product_id = extract_amazon_product_id(url)
-                short_url = f"https://www.amazon.in/dp/{product_id}/{AMAZON_AFFILIATE_ID}"
+                short_url = f"https://www.amazon.in/dp/{product_id}/{AMAZON_AFFILIATE_ID}" if product_id is not None else None
                 return short_url
 
             case Websites.FLIPKART:
@@ -255,11 +255,3 @@ class SeleniumHelper:
         main_container = soup.select_one(PRODUCT_CONTAINER[self.website_name])
 
         return main_container
-
-
-if __name__ == "__main__":
-    sel = SeleniumHelper(Websites.AMAZON)
-    list_products = sel.get_products(
-        url="https://www.amazon.in/s?k=jeans&crid=2TGODIWQ3XENE&sprefix=jean%2Caps%2C216&ref=nb_sb_noss_1")
-
-    print(list_products)

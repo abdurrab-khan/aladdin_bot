@@ -1,7 +1,6 @@
 from time import sleep
 from os import path, makedirs
-from ..const import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, COLORS, UNWANTED_CHARS, AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID
-from ..types import Product, SendMessageTo, Websites, ProductVariants
+from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, COLORS, UNWANTED_CHARS, Product, SendMessageTo, Websites, ProductVariants
 from re import sub, IGNORECASE, search
 from requests import get
 from datetime import datetime

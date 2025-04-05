@@ -23,6 +23,13 @@ ProductKey = Literal[
     "product_color"
 ]
 
+CategoryName = Literal[
+    "jeans", "t-shirt", "shirt", "cargo", "footwear", "jacket",
+    "shorts", "pyjama", "sweatshirts", "track-pant", "trouser",
+    "casual-shoes", "formal-shoes", "sports-shoes", "sneakers",
+    "wallet", "belt", "watches", "sunglasses", "perfume"
+]
+
 
 class ProductVariants(TypedDict):
     base_name: str
@@ -30,16 +37,10 @@ class ProductVariants(TypedDict):
     variants: List[Product]
 
 
-class ProductSearchResult:
-    is_last_page: bool
-    products: List[Product]
-
-
 class Websites(Enum):
     AMAZON = "amazon"
     FLIPKART = "flipkart"
     MYNTRA = "myntra"
-    AJIO = "ajio"
 
 
 class SendMessageTo(Enum):
@@ -49,7 +50,22 @@ class SendMessageTo(Enum):
 
 class ProductCategories(Enum):
     JEANS = "jeans"
-    SHIRTS = "shirts"
-    SHOES = "shoes"
+    TSHIRT = "t-shirt"
+    SHIRT = "shirt"
+    CARGO = "cargo"
+    FOOTWEAR = "footwear"
+    JACKET = "jacket"
+    SHORTS = "shorts"
+    PYJAMA = "pyjama"
+    SWEATSHIRTS = "sweatshirts"
+    TRACKPANT = "track-pant"
+    TROUSER = "trouser"
+    CASUAL_SHOES = "casual-shoes"
+    FORMAL_SHOES = "formal-shoes"
+    SPORTS_SHOES = "sports-shoes"
+    SNEAKERS = "sneakers"
+    WALLET = "wallet"
+    BELT = "belt"
     WATCHES = "watches"
-    TSHIRTS = "tshirts"
+    SUNGLASSES = "sunglasses"
+    PERFUME = "perfume"

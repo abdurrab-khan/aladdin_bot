@@ -1,8 +1,5 @@
-from .types import Websites, ProductKey, SendMessageTo
+from .types import Websites, ProductKey, SendMessageTo, ProductCategories
 from typing import Dict, List
-
-MIN_PRICE = 200
-MAX_PRICE = 2500
 
 # Regex patterns for extracting product details.
 # These patterns are used to match and extract specific information from product names and descriptions.
@@ -45,30 +42,49 @@ COMMON_URLS = {
 
 # Product categories for different e-commerce websites.
 PRODUCTS_COUNT = {
-    "jeans": 8,
-    "t-shirt": 8,
-    "shirt": 8,
-    "cargo": 3,
-    "footwear": 3,
-    "jacket": 4,
-    "shorts": 3,
-    "pyjama": 4,
-    "sweatshirts": 4,
-    "track-pant": 4,
-    "trouser": 4,
-    "casual-shoes": 4,
-    "formal-shoes": 4,
-    "sports-shoes": 4,
-    "sneakers": 5,
-    "ladies-kurta": 4,
-    "ladies-handbag": 3,
-    "saree": 5,
-    "lehenga-choli": 4,
-    "wallet": 4,
-    "belt": 4,
-    "watches": 5,
-    "sunglasses": 3,
-    "perfume": 4,
+    ProductCategories.JEANS: 6,
+    ProductCategories.TSHIRT: 6,
+    ProductCategories.SHIRT: 6,
+    ProductCategories.CARGO: 3,
+    ProductCategories.FOOTWEAR: 3,
+    ProductCategories.JACKET: 4,
+    ProductCategories.SHORTS: 3,
+    ProductCategories.PYJAMA: 4,
+    ProductCategories.SWEATSHIRTS: 4,
+    ProductCategories.TRACKPANT: 4,
+    ProductCategories.TROUSER: 4,
+    ProductCategories.CASUAL_SHOES: 4,
+    ProductCategories.FORMAL_SHOES: 4,
+    ProductCategories.SPORTS_SHOES: 4,
+    ProductCategories.SNEAKERS: 5,
+    ProductCategories.WALLET: 3,
+    ProductCategories.BELT: 3,
+    ProductCategories.WATCHES: 3,
+    ProductCategories.SUNGLASSES: 3,
+    ProductCategories.PERFUME: 4,
+}
+
+MAX_PRODUCT_PRICE = {
+    ProductCategories.JEANS: 2000,
+    ProductCategories.TSHIRT: 1500,
+    ProductCategories.SHIRT: 1500,
+    ProductCategories.CARGO: 1800,
+    ProductCategories.FOOTWEAR: 2400,
+    ProductCategories.JACKET: 2000,
+    ProductCategories.SHORTS: 1000,
+    ProductCategories.PYJAMA: 1000,
+    ProductCategories.SWEATSHIRTS: 1500,
+    ProductCategories.TRACKPANT: 2000,
+    ProductCategories.TROUSER: 2000,
+    ProductCategories.CASUAL_SHOES: 2000,
+    ProductCategories.FORMAL_SHOES: 2500,
+    ProductCategories.SPORTS_SHOES: 2500,
+    ProductCategories.SNEAKERS: 2500,
+    ProductCategories.WALLET: 1000,
+    ProductCategories.BELT: 1200,
+    ProductCategories.WATCHES: 2000,
+    ProductCategories.SUNGLASSES: 1200,
+    ProductCategories.PERFUME: 1000,
 }
 
 # Product emojis for different product categories.
@@ -145,8 +161,6 @@ PRODUCT_DETAILS: Dict[Websites, Dict[ProductKey, List[str]]] = {
         "product_rating": ["div.product-ratingsContainer span"],
         "product_url": ["a"],
     },
-    Websites.AJIO: None
-
 }
 
 
@@ -156,7 +170,6 @@ PRODUCT_CONTAINER: Dict[Websites, str] = {
     Websites.AMAZON: ".s-main-slot.s-result-list",
     Websites.FLIPKART: "div.DOjaWF.gdgoEp:not(.col-2-12):not(.col-12-12), div.DOjaWF.YJG4Cf",
     Websites.MYNTRA: "ul.results-base",
-    Websites.AJIO: None,
 }
 
 
@@ -166,7 +179,6 @@ PRODUCT_CARDS: Dict[Websites, str] = {
     Websites.AMAZON: "div.a-section.a-spacing-base",
     Websites.FLIPKART: "div._1sdMkc.LFEi7Z",
     Websites.MYNTRA: "li.product-base",
-    Websites.AJIO: None,
 }
 
 

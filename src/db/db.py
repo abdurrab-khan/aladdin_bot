@@ -2,10 +2,7 @@ from redis import Redis
 from redis.exceptions import ConnectionError, RedisError, MaxConnectionsError
 from dotenv import load_dotenv
 from os import getenv
-from time import sleep
 from typing import Optional
-
-# Decorator to handle Redis call
 
 
 def redis_call(func):
@@ -13,8 +10,8 @@ def redis_call(func):
         if not self.client:
             print("Redis client is not connected.")
             return None
+
         try:
-            print("hello working")
             return func(self, *args, **kwargs)
         except RedisError as e:
             print(f"Redis error: {e}")
@@ -108,7 +105,20 @@ class RedisDB:
             return False
 
     @redis_call
-    def add_to_set(self, key: str, member: str, expire_time: Optional[int] = None) -> None:
+    def get_all_member(self, key):
+        """
+        Get all members of the set stored at key.
+
+        args:
+            key (str): The key of the set.
+
+        return:
+            list: A list of all members of the set.
+        """
+        return list(self.client.smembers(key))
+
+    @redis_call
+    def add_to_set(self, key: str, member: str, expire_time: Optional[int] = None) -> int:
         """
         Set the value in redis database and store it in a set.
 
@@ -122,7 +132,7 @@ class RedisDB:
             None
         """
         if expire_time:
-            self.client.sadd(
+            return self.client.sadd(
                 key,
                 member,
                 {
@@ -130,10 +140,10 @@ class RedisDB:
                 }
             )
         else:
-            self.client.sadd(key, member)
+            return self.client.sadd(key, member)
 
     @redis_call
-    def remove_to_set(self, key: str, member: str) -> None:
+    def remove_to_set(self, key: str, member: str) -> int:
         """
         Remove the giver member from the set stored at key.
 
@@ -144,12 +154,17 @@ class RedisDB:
         return:
             None
         """
-        self.client.srem(key, member)
+        return self.client.srem(key, member)
 
+    @redis_call
+    def remove_set(self, key: str) -> int:
+        """
+        Remove the set stored at key.
 
-if __name__ == "__main__":
-    redis_client = RedisDB()
+        args:
+            key (str): The key of the set.
 
-    if redis_client.connect():
-        # print(redis_client.is_member("urls", "https://www.islam360.com"))
-        redis_client.add_to_set("urls", "https.>>>>>>")
+        return:
+            None
+        """
+        return self.client.delete(key)

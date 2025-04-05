@@ -1,23 +1,21 @@
-from typing import List, Optional
-from time import sleep
-from ..helpers import HelperFunctions, retry, SeleniumHelper
-from ..types import Product, ProductSearchResult, ProductVariants, Websites, SendMessageTo
-from random import uniform
+from typing import Dict, List, Optional
+from ..helpers import HelperFunctions, SeleniumHelper
+from ..lib import Product, ProductVariants, Websites, SendMessageTo, ProductCategories, CategoryName, PRODUCTS_COUNT
 
 
 class Utils:
     # Utility functions
     @staticmethod
-    def get_products_from_web(url: str, website_name: Websites) -> ProductSearchResult | None:
+    def get_products_from_web(url: str, website_name: Websites, category: ProductCategories) -> List[Product]:
         """
         Get products from a given URL and return a list of Product objects
         """
-        selenium_helper = SeleniumHelper()
+        selenium_helper = SeleniumHelper(website_name, category)
 
-        return selenium_helper.get_products(url, website_name)
+        return selenium_helper.get_products(url)
 
     @staticmethod
-    def filter_products(products):
+    def filter_products(products: Dict[CategoryName, List[Product]]):
         """
         Filter the products based on the product title and price. If the product is same with same price, but different color then keep in single list.
         """
@@ -25,6 +23,10 @@ class Utils:
         mapped_products = {}
 
         for cat in products:
+            sort_products = sorted(
+                products[cat], key=lambda x: x["product_discount"])
+            products[cat] = sort_products[:PRODUCTS_COUNT]
+
             for index, product in enumerate(products[cat]):
                 normalized_name = HelperFunctions.normalize_name(
                     product["product_name"])
@@ -73,9 +75,7 @@ class Utils:
         if products is None:
             return None
 
-        sorted_products = sorted(
-            products, key=lambda p: p["product_discount"])
-        filtered_products = Utils.filter_products(sorted_products)
+        filtered_products = Utils.filter_products(products)
 
         return filtered_products
 
