@@ -13,9 +13,14 @@ class Product(TypedDict):
     product_color: NotRequired[str]
 
 
-ProductKeys = Literal[
-    "product_name", "product_price", "product_discount",
-    "product_rating", "product_url", "product_image", "product_color"
+ProductKey = Literal[
+    "product_name",
+    "product_price",
+    "product_discount",
+    "product_rating",
+    "product_url",
+    "product_image",
+    "product_color"
 ]
 
 

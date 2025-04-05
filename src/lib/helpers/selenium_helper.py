@@ -2,6 +2,7 @@ from logging import warning
 from re import search
 from time import sleep
 from typing import Optional, Union, List
+from random import choice, uniform
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from selenium.webdriver import Chrome
@@ -9,8 +10,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from lib import FLIPKART_AFFILIATE_ID, AMAZON_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS, REQUIRED_PRODUCT_KEYS, Websites, ProductKey, Product, retry
-from random import uniform, choice
+from .helper_functions import retry
+from ..types import Websites, ProductKey, Product
+from ..const import FLIPKART_AFFILIATE_ID, AMAZON_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS, REQUIRED_PRODUCT_KEYS
 
 
 def extract_amazon_product_id(url):
@@ -28,8 +30,8 @@ def extract_amazon_product_id(url):
 class SeleniumHelper:
     def __init__(self, website_name: Websites):
         """
-        Initialize the WebDriver with Chrome options and navigate to the URL
-        """
+            Initialize the WebDriver with Chrome options and navigate to the URL
+            """
         self.products: List[Product] = []
         self.website_name = website_name
 
@@ -48,10 +50,7 @@ class SeleniumHelper:
         ]
         chrome_options.add_argument(f"user-agent={choice(user_agents)}")
 
-        # Initialize the WebDriver
         self.driver = Chrome(options=chrome_options)
-
-        # Set window size to appear more like a real browser
         self.driver.set_window_size(1920, 1080)
 
     def get_products(self, url: str) -> List[Product] | None:
@@ -255,11 +254,3 @@ class SeleniumHelper:
         main_container = soup.select_one(PRODUCT_CONTAINER[self.website_name])
 
         return main_container
-
-
-if __name__ == "__main__":
-    sel = SeleniumHelper(Websites.AMAZON)
-    list_products = sel.get_products(
-        url="https://www.amazon.in/s?k=jeans&crid=2TGODIWQ3XENE&sprefix=jean%2Caps%2C216&ref=nb_sb_noss_1")
-
-    print(list_products)

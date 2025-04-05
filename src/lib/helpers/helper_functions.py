@@ -1,8 +1,7 @@
 from time import sleep
-from typing import Optional
 from os import path, makedirs
-from ..ml_model.predict_deal import predict_deal
-from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, ProductVariants, SendMessageTo, Product, COLORS, UNWANTED_CHARS, Websites, AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, AJIO_AFFILIATE_ID
+from ..const import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, COLORS, UNWANTED_CHARS, AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID
+from ..types import Product, SendMessageTo, Websites, ProductVariants
 from re import sub, IGNORECASE, search
 from requests import get
 from datetime import datetime
@@ -99,42 +98,6 @@ class HelperFunctions:
             return matched_color.lower()
         else:
             return None
-
-    @staticmethod
-    def short_url_with_affiliate_code(url: str, website: Websites) -> str:
-        """
-        Shorten the URL and add affiliate code to the URL
-        """
-        match website:
-            case Websites.AMAZON:
-                product_id = extract_amazon_product_id(url)
-                short_url = f"https://www.amazon.in/dp/{product_id}/{AMAZON_AFFILIATE_ID}"
-                return short_url
-            case Websites.FLIPKART:
-                short_url = f"https://www.flipkart.com{url.split("?")[0]}/{FLIPKART_AFFILIATE_ID}"
-                return short_url
-            case Websites.MYNTRA:
-                return f"https://www.myntra.com{url}/{MYNTRA_AFFILIATE_ID}"
-            case Websites.AJIO:
-                pass
-            case _:
-                raise ValueError("Invalid website specified")
-
-    @staticmethod
-    def evaluate_products_with_ml(product: Optional[Product] = None) -> Optional[Product]:
-        """
-        Check if a product is a good deal using a machine learning model.
-        Returns the product if it's a good deal, None otherwise.
-        """
-        if product is None:
-            return None
-
-        prediction_result = predict_deal(product)
-
-        if prediction_result['prediction'] == 'Best Deal':
-            return product
-
-        return None
 
     @staticmethod
     def generate_message(sendTo: SendMessageTo, product: Product | ProductVariants) -> str:

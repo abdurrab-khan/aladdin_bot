@@ -1,7 +1,7 @@
 from typing import List, Optional
 from time import sleep
-from ...helpers import HelperFunctions, retry, SeleniumHelper
-from ...lib import Product, ProductSearchResult, ProductVariants, Websites
+from ..helpers import HelperFunctions, retry, SeleniumHelper
+from ..types import Product, ProductSearchResult, ProductVariants, Websites, SendMessageTo
 from random import uniform
 
 
@@ -12,15 +12,9 @@ class Utils:
         """
         Get products from a given URL and return a list of Product objects
         """
+        selenium_helper = SeleniumHelper()
 
-        max_retry = 3
-
-        @retry(max_retry)
-        def get_products() -> List[Product] | None:
-            selenium_helper = SeleniumHelper()
-            return selenium_helper.get_products(url, website_name)
-
-        return get_products(url, website_name)
+        return selenium_helper.get_products(url, website_name)
 
     @staticmethod
     def filter_products(products):
@@ -91,7 +85,9 @@ class Utils:
         """
         Send a message to the Telegram channel
         """
-        message = HelperFunctions.generate_message("telegram", product)
+        message = HelperFunctions.generate_message(
+            SendMessageTo.TELEGRAM, product)
+
         print("TELEGRAM::- ", message)
 
         pass
@@ -101,7 +97,8 @@ class Utils:
         """
         Send a message to the Twitter channel
         """
-        message = HelperFunctions.generate_message("twitter", product)
+        message = HelperFunctions.generate_message(
+            SendMessageTo.TELEGRAM, product)
 
         print("TWITTER::- ", message)
         pass

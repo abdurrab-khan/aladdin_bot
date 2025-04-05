@@ -1,4 +1,4 @@
-from .lib import WEB_URLS, PRODUCT_CATEGORY, MAX_PRODUCTS, ProductSearchResult, Utils
+from .lib import WEB_URLS, ProductSearchResult, Utils
 
 
 def main():
@@ -6,9 +6,10 @@ def main():
     Main function of the application that is called when the application is run.
     """
     all_products = {}
+    product_category = ""
 
     for url in WEB_URLS:
-        for category in PRODUCT_CATEGORY:
+        for category in product_category:
             try:
                 search_result: ProductSearchResult = Utils.get_products_from_web(
                     url.format(category=category))
