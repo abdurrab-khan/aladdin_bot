@@ -33,35 +33,35 @@ random_mens_accessories = [
 
 daily_categories = {
     "saturday": [
-        "t-shirt",
-        "jeans",
+        ProductCategories.TSHIRT,
+        ProductCategories.JEANS,
         lambda: get_unique_random_category(random_apparel, "random_apparel),"),
         lambda: get_unique_random_category(
             random_mens_accessories, "random_mens_accessories"),
     ],
     "sunday": [
-        "shirt",
-        "jeans",
-        "t-shirt",
-        lambda: get_unique_random_category(random_shoes, "random_shoes"),
+        ProductCategories.SHIRT,
+        ProductCategories.JEANS,
+        # ProductCategories.TSHIRT,
+        # lambda: get_unique_random_category(random_shoes, "random_shoes"),
     ],
     "tuesday": [
-        "shirt",
-        "jeans",
+        ProductCategories.SHIRT,
+        ProductCategories.JEANS,
         lambda: get_unique_random_category(random_apparel, "random_apparel"),
         lambda: get_unique_random_category(random_shoes, "random_shoes"),
     ],
     "wednesday": [
-        "t-shirt",
-        "shirt",
-        "jeans",
+        ProductCategories.TSHIRT,
+        ProductCategories.SHIRT,
+        ProductCategories.JEANS,
         lambda: get_unique_random_category(
             random_mens_accessories, "random_mens_accessories"),
     ],
     "friday": [
-        "t-shirt",
-        "shirt",
-        "jeans",
+        ProductCategories.TSHIRT,
+        ProductCategories.SHIRT,
+        ProductCategories.JEANS,
         lambda: get_unique_random_category(random_apparel, "random_apparel"),
         lambda: get_unique_random_category(random_shoes, "random_shoes"),
     ],
@@ -112,7 +112,7 @@ def get_daily_category() -> List[ProductCategories] | None:
 
     if daily_categories.get(current_day) is None:
         warning(f"Category not found for {current_day}")
-        return None
+        exit(1)
 
     categories = [
         item() if callable(item) else item for item in daily_categories.get(current_day)

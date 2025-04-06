@@ -1,33 +1,33 @@
-from .lib import Websites, COMMON_URLS
+from typing import Dict, List
+
+from .lib import Websites, ProductCategories, Product, COMMON_URLS, PRODUCTS_COUNT
 from .utils import Utils, get_daily_category
+from logging import warning
 
 
-def main(all_website, all_category):
+def main(categories):
     """
     Main function of the application that is called when the application is run.
     """
-    all_products = {}
+    websites = [web for web in Websites]
+    products: Dict[ProductCategories, List[Product]] = {}
 
-    for web in all_website:
-        for category in all_category:
-            url = COMMON_URLS[web].format(category=category.value)
-            print(f"URLS:: {url}")
-            try:
-                search_result = Utils.get_products_from_web(
-                    url, web, category)
+    urls = {category: {website: COMMON_URLS[website].format(
+        category=category) for website in websites} for category in categories}
 
-                all_products[category] = search_result
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
+    try:
+        products = Utils.get_products_from_web(urls)
+    except Exception as e:
+        warning(f"Error occurred while fetching products from websites: {e}")
 
-    print(all_products)
+    for category in products:
+        category_products = products[category]
+        product_count = PRODUCTS_COUNT[category]
 
-    for category in all_products:
-        products = all_products[category]
-        final_products = Utils.sort_products(products)
+        best_discounted_products = Utils.sort_products(
+            product_count, category_products)
 
-        for product in final_products:
+        for product in best_discounted_products:
             if product is None:
                 return
 
@@ -38,12 +38,6 @@ def main(all_website, all_category):
 
 
 if __name__ == "__main__":
-    all_category = get_daily_category()
-    # all_website = [web for web in Websites]
+    categories = get_daily_category()
 
-    # if all_category is None:
-    #     exit(1)
-
-    # main(all_website, all_category)
-    print("hello world")
-    print(all_category)
+    main(categories)

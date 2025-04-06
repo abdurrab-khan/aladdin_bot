@@ -23,17 +23,10 @@ ProductKey = Literal[
     "product_color"
 ]
 
-CategoryName = Literal[
-    "jeans", "t-shirt", "shirt", "cargo", "footwear", "jacket",
-    "shorts", "pyjama", "sweatshirts", "track-pant", "trouser",
-    "casual-shoes", "formal-shoes", "sports-shoes", "sneakers",
-    "wallet", "belt", "watches", "sunglasses", "perfume"
-]
-
 
 class ProductVariants(TypedDict):
     base_name: str
-    list_images: List[str]
+    product_image: List[str]
     variants: List[Product]
 
 

@@ -29,13 +29,13 @@ def extract_amazon_product_id(url) -> str | None:
 
 
 class SeleniumHelper:
-    def __init__(self, website_name: Websites, category: ProductCategories):
+    def __init__(self):
         """
             Initialize the WebDriver with Chrome options and navigate to the URL
             """
         self.products: List[Product] = []
-        self.website_name = website_name
-        self.category = category
+        self.website_name: Websites | None = None
+        self.category: ProductCategories | None = None
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")
@@ -55,7 +55,7 @@ class SeleniumHelper:
         self.driver = Chrome(options=chrome_options)
         self.driver.set_window_size(1920, 1080)
 
-    def get_products(self, url: str) -> List[Product] | None:
+    def get_products(self, website_name: Websites, category: ProductCategories, url: str, ) -> List[Product] | None:
         """
         Get products details from a given URL and return a list of Product objects.
 
@@ -65,19 +65,18 @@ class SeleniumHelper:
         return:
             List[Product] | None: A list of Product objects or None if no products found.
         """
+        self.website_name = website_name
+        self.category = category
 
         try:
             main_container = self.fetch_product_container(url)
 
             if main_container != None:
                 self.extract_products_by_website(main_container)
-
                 return self.products
+
         except Exception as e:
             raise Exception(f"Error occurred while getting products: {str(e)}")
-
-        finally:
-            self.driver.quit()
 
     def extract_products_by_website(self, main_container: BeautifulSoup):
         """

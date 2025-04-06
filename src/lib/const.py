@@ -7,13 +7,13 @@ COLORS = "blue|green|white|red|black|yellow|pink|purple|orange|brown|gray|grey|n
 UNWANTED_CHARS = r"[(){}|\[\],.\-_/:;!?@#%^&*=+'\"<>\\$]"
 
 # Path to the images directory where product images will be saved.
-IMAGE_PATH = "product_images"
+IMAGE_PATH = "images"
 
 
 # Message templates for different platforms.
 # These templates are used to format the messages that are sent to the users.
 TELEGRAM_MESSAGE_TEMPLATE = """
-<b>{product_name}</b>\n\n⭐ Reviews: {stars} ({product_rating} Stars)\n\n💰 Price: <s>❎ ₹{product_price}</s> ➡️ <b>₹{discount_price}</b>\n🔥 Discount: Save ➡️ {price_discount_percentage}%!!\n\n
+<b>{product_name}</b>\n\n⭐ Reviews: {stars} ({product_rating} Stars)\n\n💰 Price: <s>❎ ₹{product_price}</s> ➡️ <b>₹{product_discount}</b>\n🔥 Discount: Save ➡️ {product_discount_percentage}%!!\n\n
 {product_url}
 """
 

@@ -38,7 +38,7 @@ def format_message(sendTo: SendMessageTo, product_name: str, product_price: str,
         product_name=product_name,
         product_price=product_price,
         product_discount=product_discount,
-        stars=product_rating * '⭐',
+        stars=int(product_rating) * '⭐',
         product_rating=product_rating,
         product_discount_percentage=product_discount_percentage,
         product_url=product_url
@@ -105,14 +105,14 @@ class HelperFunctions:
         """
         message = ""
 
-        if isinstance(product, Product):
+        if product.get("product_name"):
             product_name = product['product_name']
             product_price = product['product_price']
             product_discount = product['product_discount']
             product_rating = product['product_rating']
             product_url = product['product_url']
-            product_discount_percentage = (
-                product_price - product_discount) / product_price * 100
+            product_discount_percentage = int((
+                product_price - product_discount) / product_price * 100)
 
             message += format_message(
                 sendTo,
@@ -123,13 +123,12 @@ class HelperFunctions:
                 product_url,
                 product_discount_percentage
             )
-
-        elif isinstance(product, ProductVariants):
-            product_name = product['base_product_name']
+        else:
+            product_name = product['base_name']
             product_price = product['variants'][0]['product_price']
             product_discount = product['variants'][0]['product_discount']
-            product_discount_percentage = (
-                product_price - product_discount) / product_price * 100
+            product_discount_percentage = int((
+                product_price - product_discount) / product_price * 100)
             product_average_rating = 0
             product_urls = ""
 
