@@ -1,11 +1,13 @@
 from time import sleep
 from os import path, makedirs
-from ..lib import MSG_TEMPLATE_BY_NAME, IMAGE_PATH, COLORS, UNWANTED_CHARS, Product, SendMessageTo, Websites, ProductVariants
+from typing import Optional
+from ..lib import MESSAGE_TEMPLATES, IMAGE_PATH, COLORS, UNWANTED_CHARS, Product, SendMessageTo, Websites, ProductVariants
 from re import sub, IGNORECASE, search
 from requests import get
 from datetime import datetime
 from logging import warning, info, error, basicConfig, INFO
 from urllib.parse import unquote
+from random import uniform, choice
 
 basicConfig(
     level=INFO,
@@ -15,7 +17,7 @@ basicConfig(
 # Decorators
 
 
-def retry(max_retries: int):
+def retry(max_retries: int, sleep_time: Optional[int] = None):
     def decorator(func):
         def wrapper(*args, **kwargs):
             for retry_count in range(max_retries):
@@ -27,24 +29,13 @@ def retry(max_retries: int):
                         warning(
                             f"Attempt {retry_count + 1}/{max_retries} failed: {str(e)}. Retrying in {wait_time} seconds...")
                         sleep(wait_time)
+                finally:
+                    if sleep_time:
+                        sleep(uniform(1, sleep_time))
                     else:
-                        raise
+                        pass
         return wrapper
     return decorator
-
-
-def format_message(sendTo: SendMessageTo, product_name: str, product_price: str, product_discount: str, product_rating: str, product_url: str, product_discount_percentage: str) -> str:
-    message = MSG_TEMPLATE_BY_NAME[sendTo].format(
-        product_name=product_name,
-        product_price=product_price,
-        product_discount=product_discount,
-        stars=int(product_rating) * '⭐',
-        product_rating=product_rating,
-        product_discount_percentage=product_discount_percentage,
-        product_url=product_url
-    )
-
-    return message
 
 
 def extract_amazon_product_id(url):
@@ -105,53 +96,32 @@ class HelperFunctions:
         """
         message = ""
 
-        if product.get("product_name"):
-            product_name = product['product_name']
-            product_price = product['product_price']
-            product_discount = product['product_discount']
-            product_rating = product['product_rating']
-            product_url = product['product_url']
-            product_discount_percentage = int((
-                product_price - product_discount) / product_price * 100)
+        product_name = product.get(
+            "product_name") or product.get("variant_name")
+        product_price = product.get(
+            "product_price") or product.get("variant_price")
+        product_discount = product.get(
+            "product_discount") or product.get("variant_discount")
+        product_url = product.get("product_url") or " \n".join(
+            product.get("variant_urls"))
+        product_rating = product.get("product_rating")
+        product_discount_percentage = int(
+            (product_price - product_discount) / product_price * 100)
 
-            message += format_message(
-                sendTo,
-                product_name,
-                product_price,
-                product_discount,
-                product_rating,
-                product_url,
-                product_discount_percentage
-            )
-        else:
-            product_name = product['base_name']
-            product_price = product['variants'][0]['product_price']
-            product_discount = product['variants'][0]['product_discount']
-            product_discount_percentage = int((
-                product_price - product_discount) / product_price * 100)
-            product_average_rating = 0
-            product_urls = ""
-
-            for varient in product['variants']:
-                product_average_rating += varient['product_rating']
-                product_urls += f"{varient.get('product_color', "")} {varient['product_url']}\n"
-
-            product_average_rating = product_average_rating / \
-                len(product['variants'])
-
-            message += format_message(
-                sendTo,
-                product_name,
-                product_price,
-                product_discount,
-                product_average_rating,
-                product_urls,
-                product_discount_percentage
-            )
+        message += MESSAGE_TEMPLATES[sendTo].format(
+            product_name=product_name,
+            product_price=product_price,
+            product_discount=product_discount,
+            stars=int(product_rating or 0) * '⭐',
+            product_rating=product_rating,
+            product_discount_percentage=product_discount_percentage,
+            product_url=product_url
+        )
 
         return message
 
     @staticmethod
+    @retry(3, 2.5)
     def download_image(image_url: str) -> str | None:
         """
         Download an image from a URL with error handling and retries.
@@ -159,45 +129,38 @@ class HelperFunctions:
         Returns:
             str: Path to downloaded image, or empty string if download failed
         """
-        makedirs(path.dirname(IMAGE_PATH), exist_ok=True)
+        makedirs(IMAGE_PATH, exist_ok=True)
         current_time = int(datetime.timestamp(datetime.now()))
-        SAVE_PATH = f"{IMAGE_PATH}/{current_time}.jpg"
+        save_path = f"{IMAGE_PATH}/{current_time}.jpg"
 
-        @retry(4)
-        def download():
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like    Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
+        headers = [
+            {
+                'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            },
+            {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15'
+            },
+            {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36 Edg/92.0.902.55'
+            },
+        ]
 
-            # Make the request with timeout
-            response = get(
-                image_url, headers=headers, timeout=10, stream=True)
+        response = get(
+            image_url, headers=choice(headers), timeout=10, stream=True)
 
-            # Check if response is successful
-            response.raise_for_status()
+        response.raise_for_status()
 
-            # Verify content type is an image
-            content_type = response.headers.get('Content-Type', '')
-            if not content_type.startswith('image/'):
-                warning(
-                    f"URL does not contain an image (Content-Type: {content_type})")
-                return False
-
-            # Save the image
-            with open(SAVE_PATH, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    file.write(chunk)
-            image_size = path.getsize(SAVE_PATH)
-            info(
-                f"Successfully downloaded {image_url} ({image_size} bytes) to {SAVE_PATH}")
-            return True
-
-        try:
-            success = download()
-            if success:
-                return SAVE_PATH
-            else:
-                return None
-        except Exception as e:
-            error(f"Failed to download image after multiple attempts: {e}")
+        content_type = response.headers.get('Content-Type', '')
+        if not content_type.startswith('image/'):
+            warning(
+                f"URL does not contain an image (Content-Type: {content_type})")
             return None
+
+        with open(save_path, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+        image_size = path.getsize(save_path)
+        info(
+            f"Successfully downloaded {image_url} ({image_size} bytes) to {save_path}")
+
+        return save_path

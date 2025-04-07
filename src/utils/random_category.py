@@ -108,7 +108,8 @@ def get_unique_random_category(category: ProductCategories, variable_name: str) 
 
 
 def get_daily_category() -> List[ProductCategories] | None:
-    current_day = datetime.now().strftime("%A").lower()
+    # current_day = datetime.now().strftime("%A").lower()
+    current_day = "sunday"
 
     if daily_categories.get(current_day) is None:
         warning(f"Category not found for {current_day}")

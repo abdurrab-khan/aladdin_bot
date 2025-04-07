@@ -1,9 +1,6 @@
-from itertools import product
-from logging import warning
 from re import search
-from time import sleep
 from typing import Optional, Union, List
-from random import choice, uniform
+from random import choice
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from selenium.webdriver import Chrome
@@ -33,6 +30,7 @@ class SeleniumHelper:
         """
             Initialize the WebDriver with Chrome options and navigate to the URL
             """
+        self.redis = None
         self.products: List[Product] = []
         self.website_name: Websites | None = None
         self.category: ProductCategories | None = None
@@ -98,6 +96,10 @@ class SeleniumHelper:
             product_details: Product = {}
             product_url = product_soup.select_one(" ,".join(
                 PRODUCT_DETAILS[Websites.FLIPKART]['product_url'])) if self.website_name == Websites.FLIPKART else None
+
+            if not self.is_product_valid(product_soup):
+                continue
+
             flipkart_product_soup = self.get_flipkart_data(product_url)
 
             for key, selectors in PRODUCT_DETAILS[self.website_name].items():
@@ -107,7 +109,7 @@ class SeleniumHelper:
                 else:
                     elements = product_soup.select_one(" ,".join(selectors))
 
-                if elements is None and key != "product_url":
+                if elements == None and not (self.website_name == Websites.FLIPKART and key == "product_url"):
                     continue
 
                 if key == "product_price" or key == "product_discount":
@@ -135,7 +137,7 @@ class SeleniumHelper:
                 continue
 
             prediction = predict_deal(product_details)
-            if prediction['prediction'] == "Best Deal" and MAX_PRODUCT_PRICE[self.category] >= product_details["product_price"]:
+            if prediction['prediction'] == "Best Deal":
                 self.products.append(product_details)
             else:
                 continue
@@ -228,7 +230,26 @@ class SeleniumHelper:
 
         return main_container
 
-    @retry(3)
+    def is_product_valid(self, product_soup: BeautifulSoup) -> bool:
+        price_element = product_soup.select_one(" ,".join(
+            PRODUCT_DETAILS[self.website_name]["product_price"]))
+        url_element = product_soup.select_one(
+            " ,".join(PRODUCT_DETAILS[self.website_name]["product_url"]))
+
+        if price_element is None or url_element is None:
+            return False
+
+        product_price = self.format_extracted_data(
+            "product_price", price_element.get_text(strip=True))
+        product_url = self.format_extracted_data(
+            "product_url", url_element.get_text(strip=True))
+
+        if product_price <= MAX_PRODUCT_PRICE[self.category]:
+            return True
+
+        # Add condition to check if in the redis already added that one product or not if yes continue else proceed.
+
+    @retry(3, 3.5)
     def fetch_product_container(self, url: str) -> BeautifulSoup | None:
         """
         Fetches and returns the main product container from the specified website URL.
@@ -242,8 +263,6 @@ class SeleniumHelper:
         self.driver.get(url)
         WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(
             (By.CSS_SELECTOR, PRODUCT_CONTAINER[self.website_name])))
-
-        sleep(uniform(0.5, 1.5))
 
         html = self.driver.page_source
 

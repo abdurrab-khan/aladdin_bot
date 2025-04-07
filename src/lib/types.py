@@ -6,8 +6,8 @@ from enum import Enum
 class Product(TypedDict):
     product_name: str
     product_price: float
-    product_discount: Union[float, None]
-    product_rating: Union[float, None]
+    product_discount: float
+    product_rating: float
     product_url: str
     product_image: str
     product_color: NotRequired[str]
@@ -25,9 +25,11 @@ ProductKey = Literal[
 
 
 class ProductVariants(TypedDict):
-    base_name: str
-    product_image: List[str]
-    variants: List[Product]
+    variant_name: str
+    variant_price: float
+    variant_discount: float
+    variant_images: List[str]
+    variant_urls: List[str]
 
 
 class Websites(Enum):

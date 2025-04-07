@@ -40,35 +40,32 @@ class Utils:
             download_image_path = HelperFunctions.download_image(
                 product["product_image"])
 
+            print(product)
+
             if download_image_path is None:
                 continue
 
-            updated_product = {
-                **product,
-                "product_color": HelperFunctions.get_product_color(product["product_name"]),
-            }
             if productIndex := mapped_products.get((normalized_name, product["product_discount"])):
-                productIndex -= 1
-                getted_product = all_products[productIndex]
-                if (getted_product.get("variants")):
-                    all_products[productIndex]['variants'].append(
-                        updated_product)
-                    all_products[productIndex]["product_image"].append(
+                getted_product: Product | ProductVariants = all_products[productIndex]
+
+                if (getted_product.get("variant_name")):
+                    all_products[productIndex]['variant_urls'].append(
+                        product["product_url"])
+                    all_products[productIndex]["variant_images"].append(
                         download_image_path)
                 else:
                     all_products[productIndex] = {
-                        "base_name": normalized_name,
-                        "product_image": [download_image_path, getted_product["product_image"]],
-                        "variants": [
-                            getted_product,
-                            updated_product
-                        ]
+                        "variant_name": normalized_name,
+                        "variant_price": getted_product["product_price"],
+                        "variant_discount": getted_product["product_discount"],
+                        "variant_images": [getted_product["product_image"], download_image_path],
+                        "variant_urls": [product["product_url"], getted_product["product_url"]],
                     }
             else:
                 mapped_products[(
-                    normalized_name, product["product_discount"])] = index + 1
-                updated_product["product_image"] = download_image_path
-                all_products.append(updated_product)
+                    normalized_name, product["product_discount"])] = index
+                product["product_image"] = download_image_path
+                all_products.append(product)
 
         return all_products
 
@@ -80,31 +77,30 @@ class Utils:
         if products is None:
             return None
 
-        sort_products = sorted(
-            products, key=lambda x: x["product_discount"])[:product_count]
+        sort_products = (sorted(
+            products, key=lambda x: x["product_discount"]))[:product_count]
 
         return Utils.filter_products(sort_products)
 
     # Send message to Telegram and Twitter
     @staticmethod
-    def send_telegram_message(product: Product | ProductVariants, image_path: str | List[str]) -> None:
+    def send_telegram_message(product: Product | ProductVariants) -> None:
         """
         Send a message to the Telegram channel
         """
         message = HelperFunctions.generate_message(
             SendMessageTo.TELEGRAM, product)
 
-        print("TELEGRAM::- ", message)
-
+        # print("TELEGRAM::- ", message)
         pass
 
     @staticmethod
-    def send_twitter_message(product: Product | ProductVariants, image_path: str | List[str]) -> None:
+    def send_twitter_message(product: Product | ProductVariants) -> None:
         """
         Send a message to the Twitter channel
         """
         message = HelperFunctions.generate_message(
-            SendMessageTo.TELEGRAM, product)
+            SendMessageTo.TWITTER, product)
 
-        print("TWITTER::- ", message)
+        # print("TWITTER::- ", message)
         pass

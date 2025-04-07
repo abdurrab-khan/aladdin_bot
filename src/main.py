@@ -13,7 +13,7 @@ def main(categories):
     products: Dict[ProductCategories, List[Product]] = {}
 
     urls = {category: {website: COMMON_URLS[website].format(
-        category=category) for website in websites} for category in categories}
+        category=category.value) for website in websites} for category in categories}
 
     try:
         products = Utils.get_products_from_web(urls)
@@ -31,10 +31,8 @@ def main(categories):
             if product is None:
                 return
 
-            image_path = product['product_image']
-
-            Utils.send_telegram_message(product, image_path)
-            Utils.send_twitter_message(product, image_path)
+            Utils.send_telegram_message(product)
+            Utils.send_twitter_message(product)
 
 
 if __name__ == "__main__":

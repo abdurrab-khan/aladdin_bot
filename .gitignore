@@ -2,3 +2,5 @@
 .env
 .*tldr
 *.tldr
+__pycache__
+images

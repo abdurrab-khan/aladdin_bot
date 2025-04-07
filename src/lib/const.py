@@ -26,7 +26,7 @@ TWITTER_MESSAGE_TEMPLATE = """
 {product_url}
 """
 
-MSG_TEMPLATE_BY_NAME = {
+MESSAGE_TEMPLATES = {
     SendMessageTo.TELEGRAM: TELEGRAM_MESSAGE_TEMPLATE,
     SendMessageTo.TWITTER: TWITTER_MESSAGE_TEMPLATE,
 }
@@ -35,9 +35,9 @@ MSG_TEMPLATE_BY_NAME = {
 # Web URLs for different e-commerce websites.
 # These URLs are used to scrape product data from the respective websites.
 COMMON_URLS = {
-    Websites.AMAZON: "https://www.amazon.in/s?k={category}&i=apparel&rh=n%3A1571271031%2Cn%3A1968024031%2Cp_36%3A-300000%2Cp_n_pct-off-with-tax%3A27060457031&dc&ds=v1%3AzQuhUM0TKjXD7zlToqva1pRM3Ga9FnC4VV9Dh8QGXfI&qid=1743830561&ref=sr_ex_n_1",
-    Websites.FLIPKART: "https://www.flipkart.com/{category}/pr?sid=clo%2Cash%2Cank%2Cedy&fm=neo%2Fmerchandising&iid=M_306f4f57-35bd-49c6-8adc-37f235257e69_1_372UD5BXDFYS_MC.IF56C41VGEYS&otracker=hp_rich_navigation_2_1.navigationCard.RICH_NAVIGATION_Fashion~Men%27s%2BTop%2BWear~Men%27s%2BT-Shirts_IF56C41VGEYS&otracker1=hp_rich_navigation_PINNED_neo%2Fmerchandising_NA_NAV_EXPANDABLE_navigationCard_cc_2_L2_view-all&cid=IF56C41VGEYS&p%5B%5D=facets.rating%255B%255D%3D3%25E2%2598%2585%2B%2526%2Babove&p%5B%5D=&p%5B%5D=facets.ideal_for%255B%255D%3DMen",
-    Websites.MYNTRA: "https://www.myntra.com/{category}?rf=Discount%20Range%3A70.0_100.0_70.0%20TO%20100.0%3A%3APrice%3A300.0_3000.0_300.0%20TO%203000.0&sort=popularity"
+    Websites.AMAZON: "https://www.amazon.in/s?k={category}&i=apparel&rh=n%3A1571271031%2Cn%3A1968024031%2Cp_36%3A-200000%2Cp_72%3A1318476031%2Cp_n_pct-off-with-tax%3A27060457031&dc&ds=v1%3AbyRKzay5iYwlmgf4D5EJ5LaYdLVQOMoRibfk5Ipsff8&crid=2PS5VP6LCCJ36&qid=1744010988&rnid=1571271031&sprefix={category}",
+    Websites.FLIPKART: "https://www.flipkart.com/search?q={category}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off&p%5B%5D=facets.rating%255B%255D%3D3%25E2%2598%2585%2B%2526%2Babove&p%5B%5D=facets.ideal_for%255B%255D%3DMen",
+    Websites.MYNTRA: "https://www.myntra.com/{category}?f=Gender%3Amen%2Cmen%20women&rawQuery={category}&rf=Discount%20Range%3A70.0_100.0_70.0%20TO%20100.0%3A%3APrice%3A300.0_2900.0_300.0%20TO%202900.0"
 }
 
 # Product categories for different e-commerce websites.
@@ -114,22 +114,6 @@ PRODUCTS_EMOJI = {
     "watches": "⌚",
     "sunglasses": "🕶️",
     "perfume": "🧴",
-}
-
-# Color emojis for different colors.
-# These emojis are used to represent different colors in the messages sent to users.
-color_emoji = {
-    "blue": "🔵",
-    "green": "🟢",
-    "white": "⚪",
-    "red": "🔴",
-    "black": "⚫",
-    "yellow": "🟡",
-    "pink": "🟣",
-    "purple": "🟣",
-    "orange": "🟠",
-    "brown": "🟤",
-    "gray": "🟡",
 }
 
 
