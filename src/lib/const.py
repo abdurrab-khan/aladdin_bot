@@ -17,7 +17,7 @@ TELEGRAM_MESSAGE_TEMPLATE = """
 {product_url}
 """
 
-TWITTER_MESSAGE_TEMPLATE = """
+X_MESSAGE_TEMPLATE = """
 {product_name}
 {product_price}
 {product_discount}
@@ -28,7 +28,7 @@ TWITTER_MESSAGE_TEMPLATE = """
 
 MESSAGE_TEMPLATES = {
     SendMessageTo.TELEGRAM: TELEGRAM_MESSAGE_TEMPLATE,
-    SendMessageTo.TWITTER: TWITTER_MESSAGE_TEMPLATE,
+    SendMessageTo.X: X_MESSAGE_TEMPLATE,
 }
 
 

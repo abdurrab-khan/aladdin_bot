@@ -32,11 +32,9 @@ class RedisDB:
         self.username = "default"
         self.db = 0
         self.client = None
+        self.pool = None
 
-    def connect(self):
-        """
-        Connect to redis database
-        """
+    def __enter__(self):
         try:
             self.client = Redis(
                 host=self.host,
@@ -55,7 +53,7 @@ class RedisDB:
 
             self.pool = self.client.connection_pool
 
-            return True
+            return self
         except ConnectionError as e:
             print(f"Redis connection error: {e}")
             return False
@@ -69,20 +67,20 @@ class RedisDB:
             print(f"Max connection hit error: {e}")
             return False
 
-    def disconnect(self):
-        """
-        Disconnect from redis database
-        """
+    def __exit__(self, exc_type, exc_value, traceback):
         try:
             if self.client:
                 self.pool.disconnect()
                 self.client = None
                 self.pool = None
-
                 print("Redis disconnected successfully.")
                 return True
         except Exception as e:
             print(f"Error during Redis disconnect: {e}")
+            return False
+
+        if exc_type:
+            print(f"An error occurred while disconnecting the db: {exc_value}")
             return False
 
         return True
@@ -105,7 +103,7 @@ class RedisDB:
             return False
 
     @redis_call
-    def get_all_member(self, key):
+    def get_all_member(self, key) -> list:
         """
         Get all members of the set stored at key.
 

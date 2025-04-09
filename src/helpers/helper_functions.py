@@ -1,13 +1,17 @@
 from time import sleep
-from os import path, makedirs
-from typing import Optional
-from ..lib import MESSAGE_TEMPLATES, IMAGE_PATH, COLORS, UNWANTED_CHARS, Product, SendMessageTo, Websites, ProductVariants
-from re import sub, IGNORECASE, search
 from requests import get
 from datetime import datetime
-from logging import warning, info, error, basicConfig, INFO
 from urllib.parse import unquote
+from typing import Optional, List
 from random import uniform, choice
+from os import path, makedirs, remove
+from re import sub, IGNORECASE, search
+from logging import warning, info, basicConfig, INFO, error
+from ..constants.messages import MESSAGE_TEMPLATES
+from ..constants.regex import COLORS, UNWANTED_CHARS
+from ..lib.types import SendMessageTo, Product, ProductVariants
+from ..constants.product import IMAGE_PATH
+
 
 basicConfig(
     level=INFO,
@@ -17,7 +21,7 @@ basicConfig(
 # Decorators
 
 
-def retry(max_retries: int, sleep_time: Optional[int] = None):
+def retry(max_retries: int):
     def decorator(func):
         def wrapper(*args, **kwargs):
             for retry_count in range(max_retries):
@@ -29,11 +33,6 @@ def retry(max_retries: int, sleep_time: Optional[int] = None):
                         warning(
                             f"Attempt {retry_count + 1}/{max_retries} failed: {str(e)}. Retrying in {wait_time} seconds...")
                         sleep(wait_time)
-                finally:
-                    if sleep_time:
-                        sleep(uniform(1, sleep_time))
-                    else:
-                        pass
         return wrapper
     return decorator
 
@@ -55,6 +54,13 @@ class HelperFunctions:
     def normalize_name(product_name) -> str:
         """
         Normalize the product name by removing colors, numbers, and unwanted characters.
+        Also removes multiple spaces and leading/trailing spaces.
+
+        args:
+            product_name: str - The product name to normalize.
+
+        return:
+            str - The normalized product name.
         """
         colors = rf"\b({COLORS})\b"
         numbers = r"\d+"
@@ -74,25 +80,17 @@ class HelperFunctions:
         return product_name.strip()
 
     @staticmethod
-    def get_product_color(product_name) -> str | None:
-        """
-        Get the color of the product from the product name.
-        """
-        colors = rF"\b({COLORS}\d+)\b"
-
-        color_match = search(colors, product_name, flags=IGNORECASE)
-
-        if color_match:
-            matched_color = color_match.group(0).strip()
-
-            return matched_color.lower()
-        else:
-            return None
-
-    @staticmethod
     def generate_message(sendTo: SendMessageTo, product: Product | ProductVariants) -> str:
         """
-        Generate a message for the product
+        Generate a message based on the product details and the platform to send it to.
+        The message is formatted using predefined templates.
+
+        args:
+            sendTo: SendMessageTo - The platform to send the message to.
+            product: Product | ProductVariants - The product details. 
+
+        return:
+            str - The formatted message.
         """
         message = ""
 
@@ -121,13 +119,39 @@ class HelperFunctions:
         return message
 
     @staticmethod
-    @retry(3, 2.5)
+    def delete_images(image_paths: str | List[str]):
+        """
+        Delete images from the given paths.
+
+        args:
+            image_paths: str | List[str] - The paths of the images to delete.
+
+        return:
+            None
+        """
+        images = [image_paths] if isinstance(image_paths, str) else image_paths
+
+        for path in images:
+            try:
+                if path.exists(image_paths):
+                    remove(image_paths)
+                    info(f"Deleted file: {image_paths}")
+                else:
+                    warning(f"File not found: {image_paths}")
+            except OSError as e:
+                error(f"Error deleting file {image_paths}: {e}")
+
+    @staticmethod
+    @retry(3)
     def download_image(image_url: str) -> str | None:
         """
         Download an image from a URL with error handling and retries.
 
-        Returns:
-            str: Path to downloaded image, or empty string if download failed
+        args:
+            image_url: str - The URL of the image to download.
+
+        return:
+            str | None - The path to the downloaded image or None if the download failed.
         """
         makedirs(IMAGE_PATH, exist_ok=True)
         current_time = int(datetime.timestamp(datetime.now()))
@@ -159,6 +183,9 @@ class HelperFunctions:
         with open(save_path, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
+
+        sleep(1.5)
+
         image_size = path.getsize(save_path)
         info(
             f"Successfully downloaded {image_url} ({image_size} bytes) to {save_path}")

@@ -1,4 +1,4 @@
-from typing import List, TypedDict, Union, Literal
+from typing import List, TypedDict, Literal
 from typing_extensions import NotRequired
 from enum import Enum
 
@@ -10,7 +10,6 @@ class Product(TypedDict):
     product_rating: float
     product_url: str
     product_image: str
-    product_color: NotRequired[str]
 
 
 ProductKey = Literal[
@@ -20,7 +19,6 @@ ProductKey = Literal[
     "product_rating",
     "product_url",
     "product_image",
-    "product_color"
 ]
 
 
@@ -40,7 +38,7 @@ class Websites(Enum):
 
 class SendMessageTo(Enum):
     TELEGRAM = "telegram"
-    TWITTER = "twitter"
+    X = "x"
 
 
 class ProductCategories(Enum):

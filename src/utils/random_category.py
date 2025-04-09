@@ -1,7 +1,7 @@
 from datetime import datetime
 from logging import warning
-from src.db.db import RedisDB
-from src.lib import ProductCategories
+from ..db.redis import RedisDB
+from ..lib.types import ProductCategories
 from typing import List
 from random import choice
 
@@ -35,7 +35,7 @@ daily_categories = {
     "saturday": [
         ProductCategories.TSHIRT,
         ProductCategories.JEANS,
-        lambda: get_unique_random_category(random_apparel, "random_apparel),"),
+        lambda: get_unique_random_category(random_apparel, "random_apparel"),
         lambda: get_unique_random_category(
             random_mens_accessories, "random_mens_accessories"),
     ],
@@ -43,7 +43,7 @@ daily_categories = {
         ProductCategories.SHIRT,
         ProductCategories.JEANS,
         # ProductCategories.TSHIRT,
-        # lambda: get_unique_random_category(random_shoes, "random_shoes"),
+        # [random_shoes, "random_shoes"]
     ],
     "tuesday": [
         ProductCategories.SHIRT,
@@ -68,55 +68,58 @@ daily_categories = {
 }
 
 
-def get_unique_random_category(category: ProductCategories, variable_name: str) -> dict:
+def get_unique_random_category(category: ProductCategories, variable_name: str, client: RedisDB) -> ProductCategories | None:
     """
     Get a random category from the database that is not in the last time category.
 
     args:
-        group_name (str): The name of the group to get the category from.
+        category (ProductCategories): The category to get a random value from.
+        variable_name (str): The name of the variable to use for the Redis key.
+        client (RedisDB): The Redis client.
 
     return:
-        dict: A random category from the database.
+        ProductCategories | None: The selected category or None if an error occurs.
     """
-    client = RedisDB()
     REDIS_KEY = f"product_categories_history_{variable_name}"
 
     try:
-        if client.connect():
-            used_memebers = client.get_all_member(REDIS_KEY)
-            all_category = [key.value for key in category]
+        used_memebers = client.get_all_member(REDIS_KEY)
+        all_category = [key.value for key in category]
 
-            available_categories = [
-                c for c in all_category if c not in used_memebers]
+        available_categories = [
+            c for c in all_category if c not in used_memebers]
 
-            if not available_categories:
-                client.remove_set(REDIS_KEY)
-                available_categories = all_category
+        if not available_categories:
+            client.remove_set(REDIS_KEY)
+            available_categories = all_category
 
-            selected_value = choice(available_categories)
-            client.add_to_set(REDIS_KEY, selected_value)
+        selected_value = choice(available_categories)
+        client.add_to_set(REDIS_KEY, selected_value)
 
-            selected_category = next(
-                c for c in category if c.value == selected_value)
+        selected_category = next(
+            c for c in category if c.value == selected_value)
 
-            return selected_category
+        return selected_category
     except Exception as e:
         print(f"Error: {e}")
         return None
-    finally:
-        client.disconnect()
 
 
-def get_daily_category() -> List[ProductCategories] | None:
+def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     # current_day = datetime.now().strftime("%A").lower()
     current_day = "sunday"
 
     if daily_categories.get(current_day) is None:
         warning(f"Category not found for {current_day}")
-        exit(1)
+        exit(0)
 
-    categories = [
-        item() if callable(item) else item for item in daily_categories.get(current_day)
-    ]
+    categories: List[ProductCategories] = []
+    for item in daily_categories.get(current_day):
+        if isinstance(item, list):
+            result = get_unique_random_category(item[0], item[1], redis)
+            if result is not None:
+                categories.append(result)
+        else:
+            categories.append(item)
 
     return categories
