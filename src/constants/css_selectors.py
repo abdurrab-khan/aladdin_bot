@@ -6,7 +6,7 @@ from ..lib.types import Websites, ProductKey
 # These selectors are used to locate and extract specific information from the HTML structure of the product pages.
 PRODUCT_DETAILS: Dict[Websites, Dict[ProductKey, List[str]]] = {
     Websites.AMAZON: {
-        "product_name": ["h2.a-size-base-plus.a-spacing-none"],
+        "product_name": ["h2.a-size-base-plus.a-spacing-none span"],
         "product_price": ["span.a-price.a-text-price span.a-offscreen"],
         "product_discount": ["span.a-price-whole", "span#priceblock_ourprice"],
         "product_image": ["img.s-image"],

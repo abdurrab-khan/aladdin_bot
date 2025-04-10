@@ -24,7 +24,7 @@ class Utils:
         try:
             for category in urls:
                 for website, url in urls[category].items():
-                    fetched_product = selenium_helper.get_products(
+                    fetched_product = selenium_helper.get_all_products(
                         website, category, url)
 
                     if fetched_product is None:
@@ -34,9 +34,6 @@ class Utils:
                         products[category].extend(fetched_product)
                     else:
                         products[category] = fetched_product
-
-                    print(
-                        f"Fetched Products:: {fetched_product}", end="\n\n\n")
 
         except Exception as e:
             raise Exception(str(e))

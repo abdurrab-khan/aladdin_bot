@@ -1,17 +1,19 @@
-from ..lib.types import Websites, ProductCategories
+from typing import Set
+from ..lib.types import Websites, ProductCategories, ProductKey
 
 # Path to the images directory where product images will be saved.
 IMAGE_PATH = "images"
 
 # Required keys for product data.
 # These keys are used to ensure that the scraped product data contains all necessary information.
-REQUIRED_PRODUCT_KEYS = [
+REQUIRED_PRODUCT_KEYS = {
     "product_name",
     "product_price",
+    "product_discount",
     "product_image",
     "product_rating",
     "product_url"
-]
+}
 
 # Affiliate IDs for different e-commerce websites.
 # These IDs are used to track referrals and earn commissions on sales generated through the bot.
@@ -102,3 +104,8 @@ PRODUCTS_EMOJI = {
     ProductCategories.SUNGLASSES: "🕶️",
     ProductCategories.PERFUME: "🧴",
 }
+
+
+# SAMPLE_URLS
+
+"https://www.amazon.in/s?k=t-shirt&i=apparel&rh=n%3A1968024031%2Cp_36%3A-205000%2Cp_n_availability%3A1318485031%2Cp_n_pct-off-with-tax%3A27060457031%2Cp_n_deal_type%3A26921226031&s=review-rank&dc&sprefix=t-shirt%2Caps%2C208&xpid=oApIbW9-PlxwF&low-price=300&high-price=1500"

@@ -15,7 +15,7 @@ from ..constants.product import IMAGE_PATH
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
 )
 
 # Decorators

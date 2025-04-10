@@ -24,6 +24,8 @@ def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     except Exception as e:
         warning(e)
 
+    print(f"Products: {products}")
+
     for category in products:
         try:
             category_products = products[category]
