@@ -1,8 +1,11 @@
-from typing import Set
-from ..lib.types import Websites, ProductCategories, ProductKey
+from ..lib.types import ProductCategories
 
 # Path to the images directory where product images will be saved.
 IMAGE_PATH = "images"
+
+# Maximum number of products to scrape from each website during a search operation
+# MAX_PRODUCTS_PER_WEBSITE = 30
+MAX_PRODUCTS_PER_WEBSITE = 10
 
 # Required keys for product data.
 # These keys are used to ensure that the scraped product data contains all necessary information.
@@ -13,20 +16,6 @@ REQUIRED_PRODUCT_KEYS = {
     "product_image",
     "product_rating",
     "product_url"
-}
-
-# Affiliate IDs for different e-commerce websites.
-# These IDs are used to track referrals and earn commissions on sales generated through the bot.
-AMAZON_AFFILIATE_ID = "?tag=aladdinloot3-21"
-FLIPKART_AFFILIATE_ID = "?affid=admitad&affExtParam1=298614"
-MYNTRA_AFFILIATE_ID = "?utm_source=admitad&utm_medium=affiliate"
-
-# Web URLs for different e-commerce websites.
-# These URLs are used to scrape product data from the respective websites.
-COMMON_URLS = {
-    Websites.AMAZON: "https://www.amazon.in/s?k={category}&i=apparel&rh=n%3A1571271031%2Cn%3A1968024031%2Cp_36%3A-200000%2Cp_72%3A1318476031%2Cp_n_pct-off-with-tax%3A27060457031&dc&ds=v1%3AbyRKzay5iYwlmgf4D5EJ5LaYdLVQOMoRibfk5Ipsff8&crid=2PS5VP6LCCJ36&qid=1744010988&rnid=1571271031&sprefix={category}",
-    Websites.FLIPKART: "https://www.flipkart.com/search?q={category}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off&p%5B%5D=facets.rating%255B%255D%3D3%25E2%2598%2585%2B%2526%2Babove&p%5B%5D=facets.ideal_for%255B%255D%3DMen",
-    Websites.MYNTRA: "https://www.myntra.com/{category}?f=Gender%3Amen%2Cmen%20women&rawQuery={category}&rf=Discount%20Range%3A70.0_100.0_70.0%20TO%20100.0%3A%3APrice%3A300.0_2900.0_300.0%20TO%202900.0"
 }
 
 # Product categories for different e-commerce websites.
@@ -47,15 +36,10 @@ PRODUCTS_PER_CATEGORY = {
     ProductCategories.SPORTS_SHOES: 4,
     ProductCategories.SNEAKERS: 5,
     ProductCategories.WALLET: 3,
-    ProductCategories.BELT: 3,
     ProductCategories.WATCHES: 3,
     ProductCategories.SUNGLASSES: 3,
     ProductCategories.PERFUME: 4,
 }
-
-# Maximum number of products to scrape from each website during a search operation
-# MAX_PRODUCTS_PER_WEBSITE = 30
-MAX_PRODUCTS_PER_WEBSITE = 10
 
 PRICE_LIMITS = {
     ProductCategories.JEANS: 2500,
@@ -74,7 +58,6 @@ PRICE_LIMITS = {
     ProductCategories.SPORTS_SHOES: 2500,
     ProductCategories.SNEAKERS: 2500,
     ProductCategories.WALLET: 1000,
-    ProductCategories.BELT: 1200,
     ProductCategories.WATCHES: 2000,
     ProductCategories.SUNGLASSES: 1200,
     ProductCategories.PERFUME: 1000,
@@ -99,13 +82,7 @@ PRODUCTS_EMOJI = {
     ProductCategories.SPORTS_SHOES: "👟",
     ProductCategories.SNEAKERS: "👟",
     ProductCategories.WALLET: "👛",
-    ProductCategories.BELT: "👔",
     ProductCategories.WATCHES: "⌚",
     ProductCategories.SUNGLASSES: "🕶️",
     ProductCategories.PERFUME: "🧴",
 }
-
-
-# SAMPLE_URLS
-
-"https://www.amazon.in/s?k=t-shirt&i=apparel&rh=n%3A1968024031%2Cp_36%3A-205000%2Cp_n_availability%3A1318485031%2Cp_n_pct-off-with-tax%3A27060457031%2Cp_n_deal_type%3A26921226031&s=review-rank&dc&sprefix=t-shirt%2Caps%2C208&xpid=oApIbW9-PlxwF&low-price=300&high-price=1500"

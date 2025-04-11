@@ -1,9 +1,10 @@
-from datetime import datetime
-from logging import warning
+from random import choice
+from pytz import timezone
+from typing import List, Union
+from logging import warning, info
+from datetime import datetime, timezone as dt
 from ..db.redis import RedisDB
 from ..lib.types import ProductCategories
-from typing import List
-from random import choice
 
 random_apparel = [
     ProductCategories.CARGO,
@@ -25,7 +26,6 @@ random_shoes = [
 
 random_mens_accessories = [
     ProductCategories.WALLET,
-    ProductCategories.BELT,
     ProductCategories.WATCHES,
     ProductCategories.SUNGLASSES,
     ProductCategories.PERFUME,
@@ -35,40 +35,32 @@ daily_categories = {
     "saturday": [
         ProductCategories.TSHIRT,
         ProductCategories.JEANS,
-        lambda: get_unique_random_category(random_apparel, "random_apparel"),
-        lambda: get_unique_random_category(
-            random_mens_accessories, "random_mens_accessories"),
+        [random_apparel, "random_apparel"]
     ],
     "sunday": [
         ProductCategories.SHIRT,
         ProductCategories.JEANS,
-        # ProductCategories.TSHIRT,
-        # [random_shoes, "random_shoes"]
+        [random_shoes, "random_shoes"]
     ],
     "tuesday": [
         ProductCategories.SHIRT,
         ProductCategories.JEANS,
-        lambda: get_unique_random_category(random_apparel, "random_apparel"),
-        lambda: get_unique_random_category(random_shoes, "random_shoes"),
+        [random_shoes, "random_shoes"]
     ],
     "wednesday": [
-        ProductCategories.TSHIRT,
-        ProductCategories.SHIRT,
         ProductCategories.JEANS,
-        lambda: get_unique_random_category(
-            random_mens_accessories, "random_mens_accessories"),
+        [random_mens_accessories, "random_mens_accessories"],
+        ProductCategories.TSHIRT,
     ],
     "friday": [
-        ProductCategories.TSHIRT,
         ProductCategories.SHIRT,
-        ProductCategories.JEANS,
-        lambda: get_unique_random_category(random_apparel, "random_apparel"),
-        lambda: get_unique_random_category(random_shoes, "random_shoes"),
+        [random_apparel, "random_apparel"],
+        [random_shoes, "random_shoes"],
     ],
 }
 
 
-def get_unique_random_category(category: ProductCategories, variable_name: str, client: RedisDB) -> ProductCategories | None:
+def get_unique_random_category(category_info: List[Union[ProductCategories, str]], client: RedisDB) -> ProductCategories | None:
     """
     Get a random category from the database that is not in the last time category.
 
@@ -80,11 +72,11 @@ def get_unique_random_category(category: ProductCategories, variable_name: str, 
     return:
         ProductCategories | None: The selected category or None if an error occurs.
     """
-    REDIS_KEY = f"product_categories_history_{variable_name}"
+    REDIS_KEY = f"product_categories_history_{category_info[-1]}"
 
     try:
         used_memebers = client.get_all_member(REDIS_KEY)
-        all_category = [key.value for key in category]
+        all_category = [key.value for key in category_info[0]]
 
         available_categories = [
             c for c in all_category if c not in used_memebers]
@@ -97,7 +89,7 @@ def get_unique_random_category(category: ProductCategories, variable_name: str, 
         client.add_to_set(REDIS_KEY, selected_value)
 
         selected_category = next(
-            c for c in category if c.value == selected_value)
+            c for c in category_info[0] if c.value == selected_value)
 
         return selected_category
     except Exception as e:
@@ -106,17 +98,43 @@ def get_unique_random_category(category: ProductCategories, variable_name: str, 
 
 
 def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
-    # current_day = datetime.now().strftime("%A").lower()
-    current_day = "sunday"
+    """
+    Get the daily category based on the current day and time.
 
-    if daily_categories.get(current_day) is None:
-        warning(f"Category not found for {current_day}")
+    args:
+        redis (RedisDB): The Redis client.
+
+    return:
+        List[ProductCategories]: The list of categories for the current day.
+    """
+    week_day = datetime.now().strftime("%A").lower()
+    utc_now = datetime.now(dt.utc)
+    ist_now = utc_now.astimezone(timezone("Asia/Kolkata"))
+    hour = ist_now.hour
+    hour = 6
+
+    week_day = "sunday"
+
+    categories_today = daily_categories.get(week_day, [])
+    if not categories_today:
+        warning(f"❌ Category not found for {week_day.title()}")
+        exit(0)
+
+    if hour == 6:
+        categories_today = categories_today[:2]
+        info("🌄 Running morning products (6 AM):")
+    elif hour == 22:
+        categories_today = [categories_today[-1]]
+        info("🌙 Running night product (10 PM):")
+    else:
+        info(
+            f"⏳ Current time is not 6 AM or 10 PM. No products to run. Current time: {hour}")
         exit(0)
 
     categories: List[ProductCategories] = []
-    for item in daily_categories.get(current_day):
+    for item in categories_today:
         if isinstance(item, list):
-            result = get_unique_random_category(item[0], item[1], redis)
+            result = get_unique_random_category(item, redis)
             if result is not None:
                 categories.append(result)
         else:

@@ -58,7 +58,11 @@ class ProductCategories(Enum):
     SPORTS_SHOES = "sports-shoes"
     SNEAKERS = "sneakers"
     WALLET = "wallet"
-    BELT = "belt"
     WATCHES = "watches"
     SUNGLASSES = "sunglasses"
     PERFUME = "perfume"
+
+
+class Properties(Enum):
+    CATEGORY_ID = "category_id"
+    INDEX = "index"

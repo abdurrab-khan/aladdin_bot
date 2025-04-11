@@ -3,8 +3,9 @@ from typing import Dict, List
 from .db.redis import RedisDB
 from .utils import Utils, get_daily_category
 from .helpers import TelegramHelper, XHelper
-from .lib.types import Product, Websites, ProductCategories
-from .constants.product import COMMON_URLS, PRODUCTS_PER_CATEGORY
+from .lib.types import Product, Properties, Websites, ProductCategories
+from .constants.url import BASE_URLS, AMAZON_URL_PROPERTIES
+from .constants.product import PRICE_LIMITS, PRODUCTS_PER_CATEGORY
 
 
 def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
@@ -16,8 +17,26 @@ def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     telegram = TelegramHelper()
     x = XHelper()
 
-    urls = {category: {website: COMMON_URLS[website].format(
-        category=category.value) for website in websites} for category in categories}
+    # urls = {category: {website: BASE_URLS[website].format(
+    #     category=category.value) for website in websites} for category in categories}
+    urls: Dict[ProductCategories, Dict[Websites, str]] = {}
+    for category in categories:
+        urls[category] = {}
+        for website in websites:
+            if website == Websites.AMAZON:
+                urls[category][website] = BASE_URLS[website].format(
+                    query=category,
+                    index=AMAZON_URL_PROPERTIES[category][Properties.INDEX],
+                    category_id=AMAZON_URL_PROPERTIES[category][Properties.CATEGORY_ID],
+                    max_price=PRICE_LIMITS[website]
+                )
+            else:
+                urls[category][website] = BASE_URLS[website].format(
+                    query=category.value, max_price=PRICE_LIMITS[website]
+                )
+
+    print(urls)
+    exit(0)
 
     try:
         products = Utils.get_products_from_web(urls, redis)

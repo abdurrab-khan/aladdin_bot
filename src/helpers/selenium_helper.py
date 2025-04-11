@@ -18,7 +18,8 @@ from .helper_functions import retry
 from ..lib.ml_model.predict_deal import predict_deal
 from ..lib.types import Websites, ProductCategories, ProductKey, Product
 from ..constants.css_selectors import NEXT_BUTTON, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS
-from ..constants.product import FLIPKART_AFFILIATE_ID, AMAZON_AFFILIATE_ID, MYNTRA_AFFILIATE_ID, REQUIRED_PRODUCT_KEYS, PRICE_LIMITS, MAX_PRODUCTS_PER_WEBSITE
+from ..constants.product import REQUIRED_PRODUCT_KEYS, PRICE_LIMITS, MAX_PRODUCTS_PER_WEBSITE
+from ..constants.url import AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID
 
 
 def extract_amazon_product_id(url) -> str | None:
