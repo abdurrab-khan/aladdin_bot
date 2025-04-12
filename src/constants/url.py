@@ -60,10 +60,6 @@ AMAZON_URL_PROPERTIES: Dict[ProductCategories, Dict[Properties, str]] = {
         Properties.CATEGORY_ID: "1968024031",
         Properties.INDEX: "fashion"
     },
-    ProductCategories.PYJAMA: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
     ProductCategories.SWEATSHIRTS: {
         Properties.CATEGORY_ID: "1968024031",
         Properties.INDEX: "fashion"

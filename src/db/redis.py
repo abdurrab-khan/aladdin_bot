@@ -1,8 +1,9 @@
 from redis import Redis
 from redis.exceptions import ConnectionError, RedisError, MaxConnectionsError
-from dotenv import load_dotenv
 from os import getenv
 from typing import Optional
+from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
+from datetime import datetime
 
 
 def redis_call(func):
@@ -25,7 +26,6 @@ def redis_call(func):
 
 class RedisDB:
     def __init__(self):
-        load_dotenv()
         self.host = getenv("REDIS_HOST")
         self.port = getenv("REDIS_PORT")
         self.password = getenv("REDIS_PASSWORD")
@@ -49,7 +49,7 @@ class RedisDB:
             )
 
             self.client.ping()
-            print("Redis connected successfully.")
+            print("🔗 Redis connected successfully.")
 
             self.pool = self.client.connection_pool
 
@@ -73,7 +73,7 @@ class RedisDB:
                 self.pool.disconnect()
                 self.client = None
                 self.pool = None
-                print("Redis disconnected successfully.")
+                print("🔒 Redis disconnected successfully.")
                 return True
         except Exception as e:
             print(f"Error during Redis disconnect: {e}")
@@ -116,7 +116,7 @@ class RedisDB:
         return list(self.client.smembers(key))
 
     @redis_call
-    def add_to_set(self, key: str, member: str, expire_time: Optional[int] = None) -> int:
+    def add_to_set(self, key: str, member: str | list, expire_time: Optional[int] = None) -> int:
         """
         Set the value in redis database and store it in a set.
 
@@ -129,16 +129,13 @@ class RedisDB:
         return:
             None
         """
+        member = [member] if isinstance(member, str) else member
+        result = self.client.sadd(key, *member)
+
         if expire_time:
-            return self.client.sadd(
-                key,
-                member,
-                {
-                    "EX": expire_time,
-                }
-            )
-        else:
-            return self.client.sadd(key, member)
+            self.client.expire(key, expire_time)
+
+        return result
 
     @redis_call
     def remove_to_set(self, key: str, member: str) -> int:
@@ -166,3 +163,39 @@ class RedisDB:
             None
         """
         return self.client.delete(key)
+
+    @redis_call
+    def is_url_cached(self, url: str, pattern: str = f"{PRODUCT_URL_CACHE_KEY}*") -> bool:
+        """
+        Check if the given URL is already in the Redis database.
+
+        args:
+            url (str): The URL to check.
+            pattern (str): The pattern to match keys.
+                Default is PRODUCT_URL_CACHE_KEY.
+
+        return:
+            bool: True if the URL is found, False otherwise.
+        """
+        cursor = 0
+
+        while True:
+            cursor, keys = self.client.scan(cursor=cursor, match=pattern)
+
+            if not keys:
+                if cursor == 0:
+                    break
+                continue
+
+            pipe = self.client.pipeline()
+            for key in keys:
+                pipe.sismember(key, url)
+
+            results = pipe.execute()
+            if any(results):
+                return True
+
+            if cursor == 0:
+                break
+
+        return False

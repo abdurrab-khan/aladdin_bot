@@ -4,8 +4,7 @@ from ..lib.types import ProductCategories
 IMAGE_PATH = "images"
 
 # Maximum number of products to scrape from each website during a search operation
-# MAX_PRODUCTS_PER_WEBSITE = 30
-MAX_PRODUCTS_PER_WEBSITE = 10
+MAX_PRODUCTS_PER_WEBSITE = 20
 
 # Required keys for product data.
 # These keys are used to ensure that the scraped product data contains all necessary information.
@@ -20,14 +19,13 @@ REQUIRED_PRODUCT_KEYS = {
 
 # Product categories for different e-commerce websites.
 PRODUCTS_PER_CATEGORY = {
-    ProductCategories.JEANS: 6,
-    ProductCategories.TSHIRT: 6,
-    ProductCategories.SHIRT: 6,
-    ProductCategories.CARGO: 3,
-    ProductCategories.FOOTWEAR: 3,
-    ProductCategories.JACKET: 4,
-    ProductCategories.SHORTS: 3,
-    ProductCategories.PYJAMA: 4,
+    ProductCategories.JEANS: 4,
+    ProductCategories.TSHIRT: 4,
+    ProductCategories.SHIRT: 4,
+    ProductCategories.CARGO: 2,
+    ProductCategories.FOOTWEAR: 2,
+    ProductCategories.JACKET: 2,
+    ProductCategories.SHORTS: 2,
     ProductCategories.SWEATSHIRTS: 4,
     ProductCategories.TRACKPANT: 4,
     ProductCategories.TROUSER: 4,
@@ -49,7 +47,6 @@ PRICE_LIMITS = {
     ProductCategories.FOOTWEAR: 2400,
     ProductCategories.JACKET: 2000,
     ProductCategories.SHORTS: 1000,
-    ProductCategories.PYJAMA: 1000,
     ProductCategories.SWEATSHIRTS: 1500,
     ProductCategories.TRACKPANT: 2000,
     ProductCategories.TROUSER: 2000,
@@ -73,7 +70,6 @@ PRODUCTS_EMOJI = {
     ProductCategories.FOOTWEAR: "🩴",
     ProductCategories.JACKET: "🧥",
     ProductCategories.SHORTS: "🩳",
-    ProductCategories.PYJAMA: "🩲",
     ProductCategories.SWEATSHIRTS: "👕",
     ProductCategories.TRACKPANT: "🩳",
     ProductCategories.TROUSER: "👖",

@@ -49,7 +49,6 @@ class ProductCategories(Enum):
     FOOTWEAR = "footwear"
     JACKET = "jacket"
     SHORTS = "shorts"
-    PYJAMA = "pyjama"
     SWEATSHIRTS = "sweatshirts"
     TRACKPANT = "track-pant"
     TROUSER = "trouser"

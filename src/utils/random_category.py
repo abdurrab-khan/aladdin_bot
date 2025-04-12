@@ -5,13 +5,13 @@ from logging import warning, info
 from datetime import datetime, timezone as dt
 from ..db.redis import RedisDB
 from ..lib.types import ProductCategories
+from ..constants.redis_key import PRODUCT_CATEGORY_CACHE_KEY
 
 random_apparel = [
     ProductCategories.CARGO,
     ProductCategories.FOOTWEAR,
     ProductCategories.JACKET,
     ProductCategories.SHORTS,
-    ProductCategories.PYJAMA,
     ProductCategories.SWEATSHIRTS,
     ProductCategories.TRACKPANT,
     ProductCategories.TROUSER,
@@ -72,7 +72,7 @@ def get_unique_random_category(category_info: List[Union[ProductCategories, str]
     return:
         ProductCategories | None: The selected category or None if an error occurs.
     """
-    REDIS_KEY = f"product_categories_history_{category_info[-1]}"
+    REDIS_KEY = PRODUCT_CATEGORY_CACHE_KEY.format(category_info[-1])
 
     try:
         used_memebers = client.get_all_member(REDIS_KEY)
@@ -112,8 +112,6 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     ist_now = utc_now.astimezone(timezone("Asia/Kolkata"))
     hour = ist_now.hour
     hour = 6
-
-    week_day = "sunday"
 
     categories_today = daily_categories.get(week_day, [])
     if not categories_today:

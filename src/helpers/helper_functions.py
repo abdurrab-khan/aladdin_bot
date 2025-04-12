@@ -2,15 +2,17 @@ from time import sleep
 from requests import get
 from datetime import datetime
 from urllib.parse import unquote
-from typing import Optional, List
-from random import uniform, choice
+from typing import List
+from random import choice
 from os import path, makedirs, remove
 from re import sub, IGNORECASE, search
 from logging import warning, info, basicConfig, INFO, error
+
+from ..constants.product import IMAGE_PATH
 from ..constants.messages import MESSAGE_TEMPLATES
 from ..constants.regex import COLORS, UNWANTED_CHARS
+from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
 from ..lib.types import SendMessageTo, Product, ProductVariants
-from ..constants.product import IMAGE_PATH
 
 
 basicConfig(
@@ -131,15 +133,15 @@ class HelperFunctions:
         """
         images = [image_paths] if isinstance(image_paths, str) else image_paths
 
-        for path in images:
+        for image_path in images:
             try:
-                if path.exists(image_paths):
-                    remove(image_paths)
-                    info(f"Deleted file: {image_paths}")
+                if path.exists(image_path):
+                    remove(image_path)
+                    info(f"Deleted file: {image_path}")
                 else:
-                    warning(f"File not found: {image_paths}")
+                    warning(f"File not found: {image_path}")
             except OSError as e:
-                error(f"Error deleting file {image_paths}: {e}")
+                error(f"Error deleting file {image_path}: {e}")
 
     @staticmethod
     @retry(3)
@@ -191,3 +193,31 @@ class HelperFunctions:
             f"Successfully downloaded {image_url} ({image_size} bytes) to {save_path}")
 
         return save_path
+
+    @staticmethod
+    def get_urls(products: Product | Product) -> List[str]:
+        urls_to_add = []
+
+        for product in products:
+            urls = product["product_url"] or product["variant_urls"]
+
+            if isinstance(urls, str):
+                urls_to_add.append(urls)
+            else:
+                urls_to_add.extend(urls)
+
+        return urls_to_add
+
+    @staticmethod
+    def generate_product_url_cache_key() -> str:
+        """
+        Generate a unique cache key for the product URL based on the current timestamp and weekday.
+
+        return:
+            str - The generated cache key.
+        """
+        now = datetime.now()
+        week_day = datetime.now().strftime("%A").lower()
+        time_stamp = datetime.timestamp(now)
+
+        return f"{PRODUCT_URL_CACHE_KEY}_{time_stamp}_{week_day}"
