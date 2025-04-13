@@ -1,9 +1,96 @@
+from os import getenv
 from typing import List
+from requests import post, get
+from logging import warning, info
+from requests_oauthlib import OAuth1
+
+from ..helpers.helper_functions import retry
 
 
 class XHelper:
     def __init__(self):
-        pass
+        self.consumer_key = getenv("TWITTER_API_KEY")
+        self.consumer_secret = getenv("TWITTER_API_SECRET_KEY")
+        self.token = getenv("TWITTER_ACCESS_TOKEN")
+        self.token_secret = getenv("TWITTER_ACCESS_TOKEN_SECRET")
 
-    def send_message(self, message: str, image: List[str] | str):
-        pass
+        if not all([self.consumer_key, self.consumer_secret, self.token, self.token_secret]):
+            raise ValueError(
+                "⛔ Missing Twitter API credentials in environment variables.")
+
+        self.auth = OAuth1(
+            resource_owner_key=self.token,
+            resource_owner_secret=self.token_secret,
+            client_key=self.consumer_key,
+            client_secret=self.consumer_secret
+        )
+
+        self.api_url = "https://api.twitter.com/2/tweets"
+        self.media_url = "https://upload.twitter.com/1.1/media/upload.json"
+        self.header = {
+            "Content-Type": "application/json",
+        }
+
+    def send_message(self, message: str, image: List[str] | str = []) -> None:
+        """
+        Send a message to the Twitter API with an image or multiple images.
+
+        args:
+            message: The message to send.
+            image: The image url or list of image urls to send.
+
+        return:
+            None
+        """
+        image = image if isinstance(image, list) else [image]
+        media_ids = []
+
+        for img_path in image:
+            media_id = self.update_media(img_path)
+            if media_id:
+                media_ids.append(media_id)
+
+        if media_ids:
+            payload = {
+                "text": message,
+                "media": {
+                    "media_ids": media_ids,
+                }
+            }
+
+        response = post(
+            self.api_url,
+            json=payload,
+            auth=self.auth,
+            headers=self.header,
+        )
+
+        if response.status_code != 201:
+            warning(f"❌ Failed to send message on X 🕊️: {response.text}")
+
+        info(f"✅ Message successfully sent to X 🕊️")
+
+    @retry(3)
+    def update_media(self, img_path: str) -> str:
+        """
+        Upload media to Twitter.
+
+        args:
+            img_path: The path to the image.
+
+        return:
+            media_id: The media id of the uploaded image.
+        """
+        with open(img_path, "rb") as file:
+            files = {"media": file}
+
+            response = post(
+                self.media_url, auth=self.auth, files=files
+            )
+
+            if response.status_code == 200:
+                media_id = response.json().get("media_id_string")
+                return media_id
+            else:
+                warning(f"❌ Failed to upload media: {response.text}")
+                return None

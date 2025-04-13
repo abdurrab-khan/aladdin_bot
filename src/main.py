@@ -1,6 +1,7 @@
-from logging import warning
+from asyncio import run
 from typing import Dict, List
 from dotenv import load_dotenv
+from logging import warning, basicConfig, INFO
 
 from .db.redis import RedisDB
 from .helpers import HelperFunctions
@@ -12,11 +13,17 @@ from .lib.types import Product, ProductCategories, Websites
 
 load_dotenv()
 
+basicConfig(
+    level=INFO,
+    format='%(asctime)s - %(levelname)s  - %(message)s'
+)
 
-def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
+
+async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     """
     Main function of the application that is called when the application is run.
     """
+    products: Dict[ProductCategories, List[Product]] = {}
     telegram = TelegramHelper()
     x = XHelper()
     cached_url_key = HelperFunctions.generate_product_url_cache_key()
@@ -41,7 +48,7 @@ def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 if product is None:
                     return
 
-                Utils.send_message(telegram, x, product)
+                await Utils.send_message(telegram, x, product)
 
             redis.add_to_set(cached_url_key, urls, PRODUCT_URL_EXPIRE_TIME)
         except Exception as e:
@@ -54,4 +61,4 @@ if __name__ == "__main__":
     with RedisDB() as redis_db:
         categories = get_daily_category(redis_db)
 
-        main(redis_db, categories)
+        run(main(redis_db, categories))

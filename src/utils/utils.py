@@ -1,3 +1,4 @@
+from logging import info
 from typing import Dict, List, Optional
 
 from ..db.redis import RedisDB
@@ -114,7 +115,7 @@ class Utils:
         return Utils.filter_products(sort_products)
 
     @staticmethod
-    def send_message(telegram: TelegramHelper, x: XHelper, product: Product | ProductVariants) -> None:
+    async def send_message(telegram: TelegramHelper, x: XHelper, product: Product | ProductVariants) -> None:
         """
         Send message to the user via Telegram and X (formerly Twitter).
 
@@ -134,7 +135,7 @@ class Utils:
                 destination, product)
 
             if destination == SendMessageTo.TELEGRAM:
-                telegram.send_message(message, image_path)
+                await telegram.send_message(message, image_path)
 
             elif destination == SendMessageTo.X:
                 x.send_message(message, image_path)
@@ -153,7 +154,6 @@ class Utils:
         return:
             Dict[ProductCategories, Dict[Websites, str]] - The generated URLs.
         """
-
         urls: Dict[ProductCategories, Dict[Websites, str]] = {}
         for category in categories:
             urls[category] = {}

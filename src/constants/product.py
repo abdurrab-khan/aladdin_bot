@@ -19,24 +19,24 @@ REQUIRED_PRODUCT_KEYS = {
 
 # Product categories for different e-commerce websites.
 PRODUCTS_PER_CATEGORY = {
-    ProductCategories.JEANS: 4,
-    ProductCategories.TSHIRT: 4,
-    ProductCategories.SHIRT: 4,
+    ProductCategories.JEANS: 3,
+    ProductCategories.TSHIRT: 3,
+    ProductCategories.SHIRT: 3,
     ProductCategories.CARGO: 2,
     ProductCategories.FOOTWEAR: 2,
     ProductCategories.JACKET: 2,
     ProductCategories.SHORTS: 2,
-    ProductCategories.SWEATSHIRTS: 4,
-    ProductCategories.TRACKPANT: 4,
-    ProductCategories.TROUSER: 4,
-    ProductCategories.CASUAL_SHOES: 4,
-    ProductCategories.FORMAL_SHOES: 4,
-    ProductCategories.SPORTS_SHOES: 4,
-    ProductCategories.SNEAKERS: 5,
-    ProductCategories.WALLET: 3,
-    ProductCategories.WATCHES: 3,
-    ProductCategories.SUNGLASSES: 3,
-    ProductCategories.PERFUME: 4,
+    ProductCategories.SWEATSHIRTS: 3,
+    ProductCategories.TRACKPANT: 3,
+    ProductCategories.TROUSER: 3,
+    ProductCategories.CASUAL_SHOES: 3,
+    ProductCategories.FORMAL_SHOES: 3,
+    ProductCategories.SPORTS_SHOES: 3,
+    ProductCategories.SNEAKERS: 3,
+    ProductCategories.WALLET: 2,
+    ProductCategories.WATCHES: 2,
+    ProductCategories.SUNGLASSES: 2,
+    ProductCategories.PERFUME: 3,
 }
 
 PRICE_LIMITS = {
@@ -60,25 +60,5 @@ PRICE_LIMITS = {
     ProductCategories.PERFUME: 1000,
 }
 
-# Product emojis for different product categories.
-# These emojis are used to represent different product categories in the messages sent to users.
-PRODUCTS_EMOJI = {
-    ProductCategories.JEANS: "👖",
-    ProductCategories.TSHIRT: "👕",
-    ProductCategories.SHIRT: "👔",
-    ProductCategories.CARGO: "👖",
-    ProductCategories.FOOTWEAR: "🩴",
-    ProductCategories.JACKET: "🧥",
-    ProductCategories.SHORTS: "🩳",
-    ProductCategories.SWEATSHIRTS: "👕",
-    ProductCategories.TRACKPANT: "🩳",
-    ProductCategories.TROUSER: "👖",
-    ProductCategories.CASUAL_SHOES: "👟",
-    ProductCategories.FORMAL_SHOES: "👞",
-    ProductCategories.SPORTS_SHOES: "👟",
-    ProductCategories.SNEAKERS: "👟",
-    ProductCategories.WALLET: "👛",
-    ProductCategories.WATCHES: "⌚",
-    ProductCategories.SUNGLASSES: "🕶️",
-    ProductCategories.PERFUME: "🧴",
-}
+TAGS = ["#fashion", "#style", "#ootd", "#instafashion", "#fashionblogger",
+        "#fashionista", "#streetstyle", "#stylish", "#fyp", "#foryou", "#viral", "#trending"]

@@ -6,19 +6,14 @@ from typing import List
 from random import choice
 from os import path, makedirs, remove
 from re import sub, IGNORECASE, search
-from logging import warning, info, basicConfig, INFO, error
+from logging import warning, info, error
 
-from ..constants.product import IMAGE_PATH
+from ..constants.product import IMAGE_PATH, TAGS
 from ..constants.messages import MESSAGE_TEMPLATES
 from ..constants.regex import COLORS, UNWANTED_CHARS
 from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
 from ..lib.types import SendMessageTo, Product, ProductVariants
 
-
-basicConfig(
-    level=INFO,
-    format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
-)
 
 # Decorators
 
@@ -115,7 +110,8 @@ class HelperFunctions:
             stars=int(product_rating or 0) * '⭐',
             product_rating=product_rating,
             product_discount_percentage=product_discount_percentage,
-            product_url=product_url
+            product_url=product_url,
+            tags=" ".join(TAGS),
         )
 
         return message
@@ -137,11 +133,11 @@ class HelperFunctions:
             try:
                 if path.exists(image_path):
                     remove(image_path)
-                    info(f"Deleted file: {image_path}")
+                    info(f"🗑️  Deleted file: {image_path} \n")
                 else:
-                    warning(f"File not found: {image_path}")
+                    warning(f"📂 File not found: {image_path} \n")
             except OSError as e:
-                error(f"Error deleting file {image_path}: {e}")
+                error(f"❌ Error deleting file {image_path}: {e} \n")
 
     @staticmethod
     @retry(3)
@@ -190,7 +186,7 @@ class HelperFunctions:
 
         image_size = path.getsize(save_path)
         info(
-            f"Successfully downloaded {image_url} ({image_size} bytes) to {save_path}")
+            f"📷 Successfully downloaded {image_url} ({image_size} bytes) to {save_path}")
 
         return save_path
 

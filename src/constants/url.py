@@ -31,6 +31,8 @@ BASE_URLS: Dict[Websites, str] = {
     Websites.MYNTRA: "https://www.myntra.com/{query}?f=Gender%3Amen%2Cmen%20women&rawQuery={query}&rf=Discount%20Range%3A80.0_100.0_80.0%20TO%20100.0%3A%3APrice%3A250.0_{max_price}.0_250.0%20TO%20{max_price}.0"
 }
 
+# Product categories and their corresponding properties for Amazon.
+# These properties are used to filter and search for products on Amazon.
 AMAZON_URL_PROPERTIES: Dict[ProductCategories, Dict[Properties, str]] = {
     ProductCategories.JEANS: {
         Properties.CATEGORY_ID: "1968024031",
