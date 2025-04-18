@@ -1,24 +1,25 @@
-from redis import Redis
-from redis.exceptions import ConnectionError, RedisError, MaxConnectionsError
 from os import getenv
+from redis import Redis
 from typing import Optional
+from logging import warning, error, info
+from redis.exceptions import ConnectionError, RedisError, MaxConnectionsError
+
 from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
-from datetime import datetime
 
 
 def redis_call(func):
     def wrapper(self, * args, **kwargs):
         if not self.client:
-            print("Redis client is not connected.")
+            warning("⚠️ Redis client is not connected.")
             return None
 
         try:
             return func(self, *args, **kwargs)
         except RedisError as e:
-            print(f"Redis error: {e}")
+            error(f"⛔ Redis error: {e}")
             return None
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            error(f"⛔ Unexpected error: {e}")
             return None
 
     return wrapper
@@ -49,22 +50,22 @@ class RedisDB:
             )
 
             self.client.ping()
-            print("🔗 Redis connected successfully.")
+            info("🔗 Redis connected successfully.")
 
             self.pool = self.client.connection_pool
 
             return self
         except ConnectionError as e:
-            print(f"Redis connection error: {e}")
+            error(f"⛔ Redis connection error: {e}")
             return False
         except RedisError as e:
-            print(f"Redis error: {e}")
+            error(f"⛔ Redis error: {e}")
             return False
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            error(f"⛔ Unexpected error: {e}")
             return False
         except MaxConnectionsError as e:
-            print(f"Max connection hit error: {e}")
+            warning(f"⚠️ Max connection hit error: {e}")
             return False
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -73,14 +74,15 @@ class RedisDB:
                 self.pool.disconnect()
                 self.client = None
                 self.pool = None
-                print("🔒 Redis disconnected successfully.")
+                info("🔒 Redis disconnected successfully.")
                 return True
         except Exception as e:
-            print(f"Error during Redis disconnect: {e}")
+            error(f"⛔ Error during Redis disconnect: {e}")
             return False
 
         if exc_type:
-            print(f"An error occurred while disconnecting the db: {exc_value}")
+            error(
+                f"⛔ An error occurred while disconnecting the db: {exc_value}")
             return False
 
         return True

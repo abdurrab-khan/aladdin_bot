@@ -1,9 +1,10 @@
 from os import getenv
 from typing import List
-from telegram import Bot
 from logging import info
+from telegram import Bot
 from telegram import InputMediaPhoto
 from telegram.request import HTTPXRequest
+from os import path
 
 from .helper_functions import retry
 

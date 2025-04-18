@@ -6,7 +6,7 @@ from logging import warning, basicConfig, INFO
 from .db.redis import RedisDB
 from .helpers import HelperFunctions
 from .utils import Utils, get_daily_category
-from .helpers import TelegramHelper, XHelper
+from .helpers import TelegramHelper, XHelper, MetaHelper
 from .constants.product import PRODUCTS_PER_CATEGORY
 from .constants.redis_key import PRODUCT_URL_EXPIRE_TIME
 from .lib.types import Product, ProductCategories, Websites
@@ -26,6 +26,7 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     products: Dict[ProductCategories, List[Product]] = {}
     telegram = TelegramHelper()
     x = XHelper()
+    # meta = MetaHelper()
     cached_url_key = HelperFunctions.generate_product_url_cache_key()
 
     urls: Dict[ProductCategories, Dict[Websites, str]
@@ -35,6 +36,8 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
         products = Utils.get_products_from_web(urls, redis)
     except Exception as e:
         warning(e)
+
+    print(best_discounted_products)
 
     for category in products:
         try:

@@ -1,10 +1,9 @@
-from logging import info
 from typing import Dict, List, Optional
 
 from ..db.redis import RedisDB
 from ..constants.product import PRICE_LIMITS
 from ..constants.url import BASE_URLS, AMAZON_URL_PROPERTIES
-from ..helpers import HelperFunctions, SeleniumHelper, TelegramHelper, XHelper
+from ..helpers import HelperFunctions, SeleniumHelper, TelegramHelper, XHelper, MetaHelper
 from ..lib.types import Product, ProductVariants, Websites, SendMessageTo, ProductCategories, Properties
 
 

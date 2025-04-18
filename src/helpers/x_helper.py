@@ -1,6 +1,6 @@
 from os import getenv
 from typing import List
-from requests import post, get
+from requests import post
 from logging import warning, info
 from requests_oauthlib import OAuth1
 
@@ -31,6 +31,7 @@ class XHelper:
             "Content-Type": "application/json",
         }
 
+    @retry(3)
     def send_message(self, message: str, image: List[str] | str = []) -> None:
         """
         Send a message to the Twitter API with an image or multiple images.
@@ -42,20 +43,20 @@ class XHelper:
         return:
             None
         """
-        image = image if isinstance(image, list) else [image]
         media_ids = []
+        payload = {
+            "text": message,
+        }
+        image = image if isinstance(image, list) else [image]
 
         for img_path in image:
-            media_id = self.update_media(img_path)
+            media_id = self.upload_media(img_path)
             if media_id:
                 media_ids.append(media_id)
 
         if media_ids:
-            payload = {
-                "text": message,
-                "media": {
-                    "media_ids": media_ids,
-                }
+            payload["media"] = {
+                "media_ids": media_ids,
             }
 
         response = post(
@@ -71,7 +72,7 @@ class XHelper:
         info(f"✅ Message successfully sent to X 🕊️")
 
     @retry(3)
-    def update_media(self, img_path: str) -> str:
+    def upload_media(self, img_path: str) -> str:
         """
         Upload media to Twitter.
 

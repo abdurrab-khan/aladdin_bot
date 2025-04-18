@@ -1,6 +1,5 @@
-from typing import List, TypedDict, Literal
-from typing_extensions import NotRequired
 from enum import Enum
+from typing import List, TypedDict, Literal
 
 
 class Product(TypedDict):

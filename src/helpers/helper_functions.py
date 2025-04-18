@@ -1,9 +1,9 @@
 from time import sleep
+from typing import List
 from requests import get
+from random import choice
 from datetime import datetime
 from urllib.parse import unquote
-from typing import List
-from random import choice
 from os import path, makedirs, remove
 from re import sub, IGNORECASE, search
 from logging import warning, info, error
@@ -30,6 +30,8 @@ def retry(max_retries: int):
                         warning(
                             f"Attempt {retry_count + 1}/{max_retries} failed: {str(e)}. Retrying in {wait_time} seconds...")
                         sleep(wait_time)
+                    else:
+                        return None
         return wrapper
     return decorator
 

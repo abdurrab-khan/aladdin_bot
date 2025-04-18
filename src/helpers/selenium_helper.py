@@ -10,14 +10,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from ..db.redis import RedisDB
 from .helper_functions import retry
 from ..lib.ml_model.predict_deal import predict_deal
 from ..lib.types import Websites, ProductCategories, ProductKey, Product
-from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
 from ..constants.css_selectors import NEXT_BUTTON, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS
 from ..constants.product import REQUIRED_PRODUCT_KEYS, PRICE_LIMITS, MAX_PRODUCTS_PER_WEBSITE
 from ..constants.url import AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID
@@ -164,7 +163,7 @@ class SeleniumHelper:
 
                 products.append(product_details)
                 info(
-                    f"✅ Best Deal found! 🛍️ {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | {self.website_name.value}")
+                    f"✅ Best Deal found! 🛍️  {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | {self.website_name.value}")
             else:
                 continue
 
