@@ -63,7 +63,7 @@ class Utils:
             normalized_name = HelperFunctions.normalize_name(
                 product["product_name"])
             download_image_path = HelperFunctions.download_image(
-                product["product_image"])
+                product["product_image_url"])
 
             if download_image_path is None:
                 continue
@@ -74,20 +74,23 @@ class Utils:
                 if (getted_product.get("variant_name")):
                     all_products[productIndex]['variant_urls'].append(
                         product["product_url"])
-                    all_products[productIndex]["variant_images"].append(
+                    all_products[productIndex]["product_image_path"].append(
                         download_image_path)
+                    all_products[productIndex]["variant_image_url"].append(
+                        product["product_image_url"])
                 else:
                     all_products[productIndex] = {
                         "variant_name": normalized_name,
                         "variant_price": getted_product["product_price"],
                         "variant_discount": getted_product["product_discount"],
-                        "variant_images": [getted_product["product_image"], download_image_path],
+                        "variant_image_path": [getted_product["product_image_path"], download_image_path],
+                        "variant_image_url": [getted_product["product_image_url"], product["product_image_url"]],
                         "variant_urls": [product["product_url"], getted_product["product_url"]],
                     }
             else:
                 mapped_products[(
                     normalized_name, product["product_discount"])] = index
-                product["product_image"] = download_image_path
+                product["product_image_path"] = download_image_path
                 all_products.append(product)
 
         return all_products
@@ -114,7 +117,7 @@ class Utils:
         return Utils.filter_products(sort_products)
 
     @staticmethod
-    async def send_message(telegram: TelegramHelper, x: XHelper, product: Product | ProductVariants) -> None:
+    async def send_message(telegram: TelegramHelper, x: XHelper, meta: MetaHelper, product: Product | ProductVariants) -> None:
         """
         Send message to the user via Telegram and X (formerly Twitter).
 
@@ -126,11 +129,13 @@ class Utils:
         return:
             None
         """
-        image_path: str | List[str] = product.get("product_image") or product.get(
-            "variant_images")
+        image_path: str | List[str] = product.get("product_image_path") or product.get(
+            "variant_image_path")
+        image_url: str | List[str] = product.get("product_image_url") or product.get(
+            "variant_image_url")
 
         for destination in SendMessageTo:
-            message: str = HelperFunctions.generate_message(
+            message: str | List[str] = HelperFunctions.generate_message(
                 destination, product)
 
             if destination == SendMessageTo.TELEGRAM:
@@ -138,6 +143,9 @@ class Utils:
 
             elif destination == SendMessageTo.X:
                 x.send_message(message, image_path)
+
+            elif destination == SendMessageTo.META:
+                meta.send_post(message, image_url)
 
         HelperFunctions.delete_images(image_path)
 

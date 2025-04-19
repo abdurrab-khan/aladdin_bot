@@ -1,12 +1,11 @@
+from enum import Enum
 from os import getenv
+from json import dumps
 from typing import List
-from logging import info,  warning
 from dotenv import load_dotenv
 from requests import get, post
-from json import dumps
-from enum import Enum
+from logging import info,  warning
 
-from ..db.redis import RedisDB
 from ..helpers import retry
 
 load_dotenv()
@@ -48,7 +47,7 @@ class MetaHelper:
         else:
             raise ValueError("⛔ Failed to retrieve token expiration data.")
 
-    def send_post(self, message: str, image_urls: str | List[str]) -> None:
+    def send_post(self, message: List[str], image_url: str | List[str]) -> None:
         """
         Send a post to Meta (Facebook/Instagram) using the Graph API.
 
@@ -59,14 +58,12 @@ class MetaHelper:
         return:
             None
         """
-        images_url = [image_urls] if isinstance(
-            image_urls, str) else image_urls
 
         # Send to FB page.
-        self.send_to_fb_page(message, images_url)
+        self.send_to_fb_page(message[0], image_url)
 
-        # Send to IG.
-        self.send_to_ig(message, images_url)
+        # # Send to IG.
+        self.send_to_ig(message[-1], image_url)
 
     def send_to_fb_page(self, message: str, image_urls: List[str]) -> None:
         """
@@ -79,34 +76,31 @@ class MetaHelper:
         return:
             None
         """
-        attached_media = []
-        for url in image_urls:
-            image_id = self.upload_image_on_meta(url, MetaAppTypes.FACEBOOK)
+        try:
+            attached_media = ""
 
-            if image_id is not None:
-                attached_media.append({"media_fbid": image_id})
+            if isinstance(image_urls, str):
+                image_id = self.upload_image_on_meta(
+                    image_urls, MetaAppTypes.FACEBOOK, message)
 
-        api = f"https://graph.facebook.com/v22.0/{self.fb_page_id}/feed"
-        payload = {
-            'message': message,
-            'attached_media': dumps(attached_media),
-            'access_token': self.page_token
-        }
-        response = post(api, params=payload)
+                if image_id is not None:
+                    attached_media = {"media_fbid": image_id}
+            else:
+                attached_media = []
 
-        response.raise_for_status()
-        response_data = response.json()
-        if response.status_code < 202:
-            info(f"✅ Post sent to Facebook page: {self.fb_page_id}")
-        else:
-            if "error" in response_data:
-                if response_data["error"]["code"] == -1:
-                    raise Exception("⛔ Failed to create carousel post.")
-                else:
-                    warning(
-                        f"⛔ Failed to create carousel post: {response_data['error']['message']}")
+                for url in image_urls:
+                    image_id = self.upload_image_on_meta(
+                        url, MetaAppTypes.FACEBOOK)
 
-    def send_to_ig(self, message: str, image_urls: str | List[str]) -> None:
+                    if image_id is not None:
+                        attached_media.append({"media_fbid": image_id})
+
+            self.send_post_req(message, dumps(
+                attached_media), MetaAppTypes.FACEBOOK)
+        except Exception as e:
+            warning(f"⛔ Failed to send post to Facebook page: {e}")
+
+    def send_to_ig(self, message: str, image_url: str | List[str]) -> None:
         """
         Send a post to Instagram.
 
@@ -117,30 +111,79 @@ class MetaHelper:
         return:
             None
         """
-        container_ids = []
-        for url in image_urls:
-            container_id = self.upload_image_on_meta(
-                url, MetaAppTypes.INSTAGRAM)
+        try:
+            creation_id = None
 
-            if container_id is not None:
-                container_ids.append(container_id)
-        carousel_id = self.create_carousel(message, container_ids)
+            if isinstance(image_url, str):
+                image_id = self.upload_image_on_meta(
+                    image_url, MetaAppTypes.INSTAGRAM, message)
 
-        api = f"https://graph.facebook.com/v22.0/{self.ig_id}/media_publish"
-        params = {
-            "creation_id": carousel_id,
-            "access_token": self.access_token
-        }
+                if image_id is not None:
+                    creation_id = image_id
+            else:
+                container_ids = []
+
+                for url in image_url:
+                    image_id = self.upload_image_on_meta(
+                        url, MetaAppTypes.INSTAGRAM)
+
+                    if image_id is not None:
+                        container_ids.append(image_id)
+
+                if len(container_ids) > 1:
+                    creation_id = self.create_carousel(message, container_ids)
+                else:
+                    creation_id = container_ids[0]
+
+            self.send_post_req(message, creation_id, MetaAppTypes.INSTAGRAM)
+        except Exception as e:
+            warning(f"⛔ Failed to send post to Instagram: {e}")
+
+    @retry(3)
+    def send_post_req(self, message: str, send_data: str, app: MetaAppTypes) -> None:
+        """
+        Sends a POST request to the Meta Graph API to publish content on Instagram or Facebook.
+
+        args:
+            message (str): The message to be sent.
+            send_data (str): The data to be sent in the request.
+            app (MetaAppTypes): The application type (Instagram or Facebook).
+
+        return:
+            None
+        """
+        if send_data is None:
+            return
+
+        if app == MetaAppTypes.INSTAGRAM:
+            api = f"https://graph.facebook.com/v22.0/{self.ig_id}/media_publish"
+            params = {
+                "creation_id": send_data,
+                "access_token": self.access_token
+            }
+        elif app == MetaAppTypes.FACEBOOK:
+            api = f"https://graph.facebook.com/v22.0/{self.fb_page_id}/feed"
+            params = {
+                'message': message,
+                'attached_media': send_data,
+                'access_token': self.page_token
+            }
 
         response = post(api, params=params)
-        response.raise_for_status()
         response_data = response.json()
 
         if response.status_code < 202:
-            info(f"✅ Post sent to Instagram: {self.ig_id}")
+            if app == MetaAppTypes.INSTAGRAM:
+                info(f"📸 Instagram post created: {response_data['id']}")
+            else:
+                info(f"📩 Facebook post created: {response_data['id']}")
         else:
-            warning(
-                f"⛔ Failed to send post to Instagram: {response_data['error']['message']}")
+            if "error" in response_data:
+                if response_data["error"]["code"] == -1 and app == MetaAppTypes.INSTAGRAM:
+                    raise Exception("⛔ Failed to create carousel post.")
+                else:
+                    warning(
+                        f"⛔ Failed to create carousel post: {response_data['error']['message']}")
 
     @retry(3)
     def create_carousel(self, message: str, container_id: List[str]) -> str:
@@ -148,7 +191,7 @@ class MetaHelper:
         Create a carousel post on Instagram.
 
         args:
-            container_id (str): The ID of the post container.
+            container_id(str): The ID of the post container.
 
         return:
             str: The ID of the created carousel post.
@@ -167,6 +210,7 @@ class MetaHelper:
 
         response_data = response.json()
         if response.status_code < 202:
+            info(f"➕ Carousel post created: {response_data['id']}")
             return response_data["id"]
         else:
             if "error" in response_data:
@@ -177,40 +221,38 @@ class MetaHelper:
                         f"⛔ Failed to create carousel post: {response_data['error']['message']}")
 
     @retry(3)
-    def upload_image_on_meta(self, image_url: str, app: MetaAppTypes) -> str:
+    def upload_image_on_meta(self, image_url: str, app: MetaAppTypes, caption: str = None) -> str:
         """
-        Upload an image to Meta (Facebook/Instagram) using the Graph API.
+        Upload an image to Meta(Facebook/Instagram) using the Graph API.
 
         args:
-            image_path (str): The path to the image to be uploaded.
+            image_path(str): The path to the image to be uploaded.
         return:
             str: The Id of the uploaded image.
         """
         if app == MetaAppTypes.INSTAGRAM:
             api = f"https://graph.facebook.com/v22.0/{self.ig_id}/media"
-            data = {
+            params = {
                 'image_url': image_url,
                 'access_token': self.access_token
             }
 
+            if caption:
+                params['caption'] = caption
+
         elif app == MetaAppTypes.FACEBOOK:
             api = f"https://graph.facebook.com/v22.0/{self.fb_page_id}/photos"
-            data = {
+            params = {
                 'url': image_url,
                 'published': 'false',
                 'access_token': self.page_token
             }
 
-        response = post(api, params=data)
-
-        print(f"Response: {response.status_code}")
-        print(f"Text: {response.text}")
-
-        response.raise_for_status()
+        response = post(api, params=params)
 
         response_data = response.json()
-
         if response.status_code < 202:
+            info(f"✅ Image uploaded: {response_data['id']}")
             image_id = response_data["id"]
             return image_id
         else:

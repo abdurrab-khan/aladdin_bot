@@ -105,16 +105,28 @@ class HelperFunctions:
         product_discount_percentage = int(
             (product_price - product_discount) / product_price * 100)
 
-        message += MESSAGE_TEMPLATES[sendTo].format(
-            product_name=product_name,
-            product_price=product_price,
-            product_discount=product_discount,
-            stars=int(product_rating or 0) * '⭐',
-            product_rating=product_rating,
-            product_discount_percentage=product_discount_percentage,
-            product_url=product_url,
-            tags=" ".join(TAGS),
-        )
+        message_data = {
+            "product_name": product_name,
+            "product_price": product_price,
+            "product_discount": product_discount,
+            "stars": int(product_rating or 0) * '⭐',
+            "product_rating": product_rating,
+            "product_discount_percentage": product_discount_percentage,
+            "product_url": "🔗 " + product_url,
+            "tags": " ".join(TAGS),
+        }
+
+        if sendTo == SendMessageTo.META:
+            message = []
+
+            message.append(MESSAGE_TEMPLATES[sendTo].format(**message_data))
+
+            message_data_copy = message_data.copy()
+            message_data_copy["product_url"] = '📍 Tap the "link in bio" to grab yours now!'
+            message.append(
+                MESSAGE_TEMPLATES[sendTo].format(**message_data_copy))
+        else:
+            message += MESSAGE_TEMPLATES[sendTo].format(**message_data)
 
         return message
 

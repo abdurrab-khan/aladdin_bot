@@ -8,7 +8,8 @@ class Product(TypedDict):
     product_discount: float
     product_rating: float
     product_url: str
-    product_image: str
+    product_image_path: str
+    product_image_url: str
 
 
 ProductKey = Literal[
@@ -17,7 +18,8 @@ ProductKey = Literal[
     "product_discount",
     "product_rating",
     "product_url",
-    "product_image",
+    "product_image_path",
+    "product_image_url",
 ]
 
 
@@ -25,8 +27,9 @@ class ProductVariants(TypedDict):
     variant_name: str
     variant_price: float
     variant_discount: float
-    variant_images: List[str]
     variant_urls: List[str]
+    variant_image_path: List[str]
+    variant_image_url: List[str]
 
 
 class Websites(Enum):
@@ -38,6 +41,7 @@ class Websites(Enum):
 class SendMessageTo(Enum):
     TELEGRAM = "telegram"
     X = "x"
+    META = "meta"
 
 
 class ProductCategories(Enum):

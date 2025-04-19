@@ -16,20 +16,19 @@ TELEGRAM_MESSAGE_TEMPLATE = """
 {tags}
 """
 
-X_MESSAGE_TEMPLATE = """
-✨ Just discovered: {product_name} ✨
+MESSAGE_TEMPLATE = """✨ {product_name} ✨
 
 💰 Price: ₹{product_price}
-🔥 Discount: ₹{product_discount}  ({product_discount_percentage} off!)
-⭐ Reviews: {stars} ({product_rating})
+🔥 You save: ₹{product_discount}  ({product_discount_percentage}% OFF)
+⭐ Rated {stars} ★ ({product_rating} reviews)
 
-🛒 Grab yours now!
-➡️ {product_url}
+🛒 Ready to shop?
+{product_url}
 
-{tags}
-"""
+{tags}"""
 
 MESSAGE_TEMPLATES = {
     SendMessageTo.TELEGRAM: TELEGRAM_MESSAGE_TEMPLATE,
-    SendMessageTo.X: X_MESSAGE_TEMPLATE,
+    SendMessageTo.X: MESSAGE_TEMPLATE,
+    SendMessageTo.META: MESSAGE_TEMPLATE,
 }

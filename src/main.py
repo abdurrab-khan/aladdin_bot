@@ -6,8 +6,8 @@ from logging import warning, basicConfig, INFO
 from .db.redis import RedisDB
 from .helpers import HelperFunctions
 from .utils import Utils, get_daily_category
-from .helpers import TelegramHelper, XHelper, MetaHelper
 from .constants.product import PRODUCTS_PER_CATEGORY
+from .helpers import TelegramHelper, XHelper, MetaHelper
 from .constants.redis_key import PRODUCT_URL_EXPIRE_TIME
 from .lib.types import Product, ProductCategories, Websites
 
@@ -24,9 +24,6 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     Main function of the application that is called when the application is run.
     """
     products: Dict[ProductCategories, List[Product]] = {}
-    telegram = TelegramHelper()
-    x = XHelper()
-    # meta = MetaHelper()
     cached_url_key = HelperFunctions.generate_product_url_cache_key()
 
     urls: Dict[ProductCategories, Dict[Websites, str]
@@ -35,9 +32,13 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     try:
         products = Utils.get_products_from_web(urls, redis)
     except Exception as e:
-        warning(e)
+        warning(f"⚠️ Error occurred while fetching products: {str(e)}")
+        return
 
-    print(best_discounted_products)
+    # Initialize helpers (Telegram, X, Meta)
+    telegram = TelegramHelper()
+    x = XHelper()
+    meta = MetaHelper()
 
     for category in products:
         try:
@@ -51,12 +52,12 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 if product is None:
                     return
 
-                await Utils.send_message(telegram, x, product)
+                await Utils.send_message(telegram, x, meta, product)
 
             redis.add_to_set(cached_url_key, urls, PRODUCT_URL_EXPIRE_TIME)
         except Exception as e:
             warning(
-                f"Error occurred while processing category {category.value}: {str(e)}")
+                f"⚠️ Error occurred while processing category {category.value}: {str(e)}")
             continue
 
 

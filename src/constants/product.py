@@ -12,7 +12,7 @@ REQUIRED_PRODUCT_KEYS = {
     "product_name",
     "product_price",
     "product_discount",
-    "product_image",
+    "product_image_url",
     "product_rating",
     "product_url"
 }

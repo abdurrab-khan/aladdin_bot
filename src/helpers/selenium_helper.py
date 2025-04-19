@@ -244,11 +244,11 @@ class SeleniumHelper:
         if element_data == None:
             return None
 
-        if key == "product_image" or key == "product_url":
+        if key == "product_image_url" or key == "product_url":
             attr = "href" if key == "product_url" else "src"
             element = element_data[attr]
 
-            return element if key == "product_image" else self.short_url_with_affiliate_code(element)
+            return element if key == "product_image_url" else self.short_url_with_affiliate_code(element)
         else:
             element = element_data.get_text(strip=True)
 
