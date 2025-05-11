@@ -1,4 +1,8 @@
+from logging import error
+from collections import defaultdict
 from typing import Dict, List, Optional
+from selenium.common.exceptions import WebDriverException, TimeoutException
+
 
 from ..db.redis import RedisDB
 from ..constants.product import PRICE_LIMITS
@@ -21,28 +25,30 @@ class Utils:
             Dict[ProductCategories, List[Product]] - The fetched products.
         """
         selenium_helper = SeleniumHelper(redis)
-        products: Dict[ProductCategories, List[Product]] = {}
+        products: Dict[ProductCategories, List[Product]] = defaultdict(list)
 
         try:
             for category in urls:
                 for website, url in urls[category].items():
-                    fetched_product = selenium_helper.get_all_products(
-                        website, category, url)
+                    try:
+                        fetched_product = selenium_helper.get_all_products(
+                            website, category, url)
 
-                    if fetched_product is None or not fetched_product:
+                        if fetched_product:
+                            products[category].extend(fetched_product)
+
+                    except (WebDriverException, TimeoutException) as e:
+                        error(
+                            f"⚠️ Error fetching from {website} ({category.value}): {str(e)}")
                         continue
-
-                    if products.get(category):
-                        products[category].extend(fetched_product)
-                    else:
-                        products[category] = fetched_product
-
-        except Exception as e:
-            raise Exception(str(e))
+                    except Exception as e:
+                        error(
+                            f"⚠️ Unexpected error for {website} ({category.value}): {str(e)}")
+                        continue
         finally:
             selenium_helper.driver.quit()
 
-        return products
+        return dict(products)
 
     @staticmethod
     def filter_products(products: List[Product]) -> List[Product | ProductVariants]:
@@ -144,8 +150,8 @@ class Utils:
             elif destination == SendMessageTo.X:
                 x.send_message(message, image_path)
 
-            elif destination == SendMessageTo.META:
-                meta.send_post(message, image_url)
+            # elif destination == SendMessageTo.META:
+            #     meta.send_post(message, image_url)
 
         HelperFunctions.delete_images(image_path)
 

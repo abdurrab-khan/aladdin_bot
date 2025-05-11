@@ -1,3 +1,4 @@
+from json import dumps
 from asyncio import run
 from typing import Dict, List
 from dotenv import load_dotenv
@@ -33,7 +34,6 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
         products = Utils.get_products_from_web(urls, redis)
     except Exception as e:
         warning(f"⚠️ Error occurred while fetching products: {str(e)}")
-        return
 
     # Initialize helpers (Telegram, X, Meta)
     telegram = TelegramHelper()
@@ -60,6 +60,11 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 f"⚠️ Error occurred while processing category {category.value}: {str(e)}")
             continue
 
+# TODO: Make selenium helper more efficient when no product found, Like for myntra, facebook.
+# TODO: If Discount is more than 90% then also send Story on Instagram and Facebook.
+# TODO: FLIPKART has same classname in both next page and previous page.
+# TODO: Instead of send image url in (Instagram,Facebook). Send image data and get image url from meta api and send them on instagram.
+# TODO: Edit product download image, Add Price Tag on them.
 
 if __name__ == "__main__":
     with RedisDB() as redis_db:

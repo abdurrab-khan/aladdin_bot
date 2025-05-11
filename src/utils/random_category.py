@@ -75,10 +75,10 @@ def get_unique_random_category(category_info: List[Union[ProductCategories, str]
     """
     REDIS_KEY = PRODUCT_CATEGORY_CACHE_KEY.format(category=category_info[-1])
     try:
-        used_memebers = client.get_all_member(REDIS_KEY)
+        used_members = client.get_all_member(REDIS_KEY)
         all_category = [key.value for key in category_info[0]]
         available_categories = [
-            c for c in all_category if c not in used_memebers]
+            c for c in all_category if c not in used_members]
 
         if not available_categories:
             client.remove_set(REDIS_KEY)
@@ -111,7 +111,6 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     ist_now = utc_now.astimezone(timezone("Asia/Kolkata"))
     hour = ist_now.hour
     hour = 6
-
     categories_today = daily_categories.get(week_day, [])
     if not categories_today:
         warning(f"⚠️ Category not found for {week_day.title()}")
