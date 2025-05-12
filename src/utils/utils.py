@@ -31,7 +31,7 @@ class Utils:
             for category in urls:
                 for website, url in urls[category].items():
                     try:
-                        fetched_product = selenium_helper.get_all_products(
+                        fetched_product = selenium_helper.get_product(
                             website, category, url)
 
                         if fetched_product:
@@ -46,7 +46,7 @@ class Utils:
                             f"⚠️ Unexpected error for {website} ({category.value}): {str(e)}")
                         continue
         finally:
-            selenium_helper.driver.quit()
+            selenium_helper.close()
 
         return dict(products)
 

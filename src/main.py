@@ -60,9 +60,7 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 f"⚠️ Error occurred while processing category {category.value}: {str(e)}")
             continue
 
-# TODO: Make selenium helper more efficient when no product found, Like for myntra, facebook.
 # TODO: If Discount is more than 90% then also send Story on Instagram and Facebook.
-# TODO: FLIPKART has same classname in both next page and previous page.
 # TODO: Instead of send image url in (Instagram,Facebook). Send image data and get image url from meta api and send them on instagram.
 # TODO: Edit product download image, Add Price Tag on them.
 

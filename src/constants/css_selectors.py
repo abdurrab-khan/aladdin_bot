@@ -16,7 +16,7 @@ PRODUCT_DETAILS: Dict[Websites, Dict[ProductKey, List[str]]] = {
     Websites.FLIPKART: {
         "product_name": ["span.VU-ZEz"],
         "product_price": [r"div.yRaY8j"],
-        "product_discount": ["div.Nx9bqj.CxhGGd"],
+        "product_discount": ["div.hl05eU div.Nx9bqj"],
         "product_image_url": ["div._8id3KM img"],
         "product_rating": ["div.XQDdHH"],
         "product_url": ["a.rPDeLR"],
