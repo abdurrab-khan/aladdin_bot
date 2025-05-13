@@ -123,7 +123,7 @@ class Utils:
         return Utils.filter_products(sort_products)
 
     @staticmethod
-    async def send_message(telegram: TelegramHelper, x: XHelper, meta: MetaHelper, product: Product | ProductVariants) -> None:
+    async def send_message(telegram: TelegramHelper, x: XHelper, product: Product | ProductVariants) -> None:
         """
         Send message to the user via Telegram and X (formerly Twitter).
 

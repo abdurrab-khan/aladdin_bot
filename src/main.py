@@ -16,7 +16,7 @@ load_dotenv()
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(levelname)s  - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
 )
 
 
@@ -38,7 +38,7 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     # Initialize helpers (Telegram, X, Meta)
     telegram = TelegramHelper()
     x = XHelper()
-    meta = MetaHelper()
+    # meta = MetaHelper()
 
     for category in products:
         try:
@@ -52,7 +52,7 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 if product is None:
                     return
 
-                await Utils.send_message(telegram, x, meta, product)
+                await Utils.send_message(telegram, x,  product)
 
             redis.add_to_set(cached_url_key, urls, PRODUCT_URL_EXPIRE_TIME)
         except Exception as e:

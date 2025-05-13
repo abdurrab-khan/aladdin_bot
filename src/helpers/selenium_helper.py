@@ -22,6 +22,7 @@ from ..constants.product import PRICE_LIMITS, MAX_PRODUCTS_PER_WEBSITE
 from ..constants.url import AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID
 
 
+# This class is responsible for initializing and managing the WebDriver
 class WebDriverUtility:
     """
         Handles the initialization and basic operations of the WebDriver.
@@ -99,7 +100,7 @@ class WebDriverUtility:
         try:
             return WebDriverWait(self.driver, timeout).until(callback)
         except TimeoutException:
-            error("⌛ Timeout waiting for condition to be met")
+            warning("⌛ Timeout waiting for condition to be met")
             return None
 
     def close_driver(self):
@@ -111,6 +112,7 @@ class WebDriverUtility:
             warning("⚠️ Driver is already closed or not initialized")
 
 
+# This class is responsible for processing and formatting data
 class DataProcessingHelper:
     """
     Handles data processing, formatting, and validation operations.
@@ -358,7 +360,7 @@ class WebsiteScraper:
         products_soup = container.select(PRODUCT_CARDS[website_name])
 
         if not products_soup:
-            return None
+            return []
 
         for soup in products_soup:
             product_details: Product = DataProcessingHelper.get_product_details(
@@ -432,6 +434,7 @@ class WebsiteScraper:
         return False
 
 
+# All website-specific scrapers inherit from WebsiteScraper
 class AmazonScraper(WebsiteScraper):
     """
     Amazon-specific scraper implementation.
@@ -720,13 +723,13 @@ class SeleniumHelper:
 
                 page_products = scraper.extract_products(container)
 
-                print(page_products)
+                print(f"Page Products: | {page_products}")
 
                 # Prevent infinite loop if no products are found
                 if len(page_products) == 0:
                     empty_page_count += 1
 
-                    if empty_page_count > 13:
+                    if empty_page_count >= 10:
                         break
                 else:
                     if empty_page_count > 0:
@@ -746,7 +749,7 @@ class SeleniumHelper:
 
             return all_products
         except Exception as e:
-            error(f"Error scraping {website_name} products: {str(e)}")
+            error(f"⛔ Error scraping {website_name} products: {str(e)}")
             return all_products if all_products else None
 
     def close(self):
