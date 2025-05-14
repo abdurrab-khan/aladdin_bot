@@ -369,7 +369,7 @@ class WebsiteScraper:
             if product_details is None or not DataProcessingHelper.is_product_valid(product_details["product_url"], product_details["product_discount"], PRICE_LIMITS[self.category], self.redis_client):
                 continue
 
-            if predict_deal(product_details) != "Best Deal" or self.processed_product_urls.__contains__(product_details["product_url"]):
+            if predict_deal(product_details)["prediction"] != "Best Deal" or self.processed_product_urls.__contains__(product_details["product_url"]):
                 continue
 
             products.append(product_details)
@@ -541,6 +541,7 @@ class FlipkartScraper(WebsiteScraper):
             products.append(product_details)
             self.processed_product_urls.add(product_details["product_url"])
 
+            sleep(uniform(1, 1.8))
             info(
                 f"✅ Best Deal found! 🛍️  {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | flipkart")
 
@@ -616,6 +617,9 @@ class FlipkartScraper(WebsiteScraper):
 
         product_details["product_url"] = DataProcessingHelper.short_url_with_affiliate_code(
             url, Websites.FLIPKART)
+
+        if predict_deal(product_details)["prediction"] != "Best Deal":
+            return None
 
         return product_details
 
@@ -723,8 +727,6 @@ class SeleniumHelper:
 
                 page_products = scraper.extract_products(container)
 
-                print(f"Page Products: | {page_products}")
-
                 # Prevent infinite loop if no products are found
                 if len(page_products) == 0:
                     empty_page_count += 1
@@ -745,8 +747,7 @@ class SeleniumHelper:
 
                 scraper.go_to_next_page()
                 page_counter += 1
-                sleep(1)
-
+                sleep(uniform(1, 2.5))
             return all_products
         except Exception as e:
             error(f"⛔ Error scraping {website_name} products: {str(e)}")

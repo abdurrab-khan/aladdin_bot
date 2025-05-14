@@ -35,7 +35,7 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
     except Exception as e:
         warning(f"⚠️ Error occurred while fetching products: {str(e)}")
 
-    # Initialize helpers (Telegram, X, Meta)
+    # Initialize helpers(Telegram, X, Meta)
     telegram = TelegramHelper()
     x = XHelper()
     # meta = MetaHelper()
