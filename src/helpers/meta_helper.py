@@ -2,13 +2,10 @@ from enum import Enum
 from os import getenv
 from json import dumps
 from typing import List
-from dotenv import load_dotenv
 from requests import get, post
 from logging import info,  warning
 
 from ..helpers import retry
-
-load_dotenv()
 
 
 class MetaAppTypes(Enum):
@@ -42,8 +39,10 @@ class MetaHelper:
         url = f"https://graph.facebook.com/debug_token?input_token={self.access_token}&access_token={self.access_token}"
         response = get(url).json()
 
+        print(response)
+
         if "data" in response and "expires_at" in response["data"]:
-            pass
+            print(response["data"])
         else:
             raise ValueError("⛔ Failed to retrieve token expiration data.")
 
@@ -65,7 +64,7 @@ class MetaHelper:
         # # Send to IG.
         self.send_to_ig(message[-1], image_url)
 
-    def send_to_fb_page(self, message: str, image_urls: List[str]) -> None:
+    def send_to_fb_page(self, message: str, image_urls: str | List[str]) -> None:
         """
         Send a post to the Facebook page.
 
@@ -96,7 +95,7 @@ class MetaHelper:
                         attached_media.append({"media_fbid": image_id})
 
             self.send_post_req(message, dumps(
-                attached_media), MetaAppTypes.FACEBOOK)
+                [attached_media]), MetaAppTypes.FACEBOOK)
         except Exception as e:
             warning(f"⛔ Failed to send post to Facebook page: {e}")
 
@@ -174,9 +173,9 @@ class MetaHelper:
 
         if response.status_code < 202:
             if app == MetaAppTypes.INSTAGRAM:
-                info(f"📸 Instagram post created: {response_data['id']}")
+                info(f"✅ Message successfully sended to Instagram 📸")
             else:
-                info(f"📩 Facebook post created: {response_data['id']}")
+                info(f"✅ Message successfully sended to Facebook page 📘")
         else:
             if "error" in response_data:
                 if response_data["error"]["code"] == -1 and app == MetaAppTypes.INSTAGRAM:
@@ -262,3 +261,8 @@ class MetaHelper:
                 else:
                     warning(
                         f"⛔ Failed to create carousel post: {response_data['error']['message']}")
+
+
+if __name__ == "__main__":
+    meta = MetaHelper()
+    meta.get_days_until_token_expiration()

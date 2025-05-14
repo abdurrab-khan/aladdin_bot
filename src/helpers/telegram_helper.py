@@ -1,11 +1,9 @@
 from os import getenv
-import re
 from typing import List
 from logging import info
 from telegram import Bot
 from telegram import InputMediaPhoto
 from telegram.request import HTTPXRequest
-from os import path
 
 from .helper_functions import retry
 
@@ -41,7 +39,7 @@ class TelegramHelper:
         else:
             await self.send_product_with_single_image(message, image_url)
 
-        info(f"✅ Message successfully sent to Telegram 📲")
+        info(f"✅ Message successfully sended to Telegram 📲")
 
     async def send_product_with_single_image(self, message, image_path: str):
         await self.bot.send_photo(

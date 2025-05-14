@@ -1,3 +1,4 @@
+from json import dumps
 from asyncio import run
 from typing import Dict, List
 from dotenv import load_dotenv
@@ -15,7 +16,7 @@ load_dotenv()
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(levelname)s  - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
 )
 
 
@@ -33,12 +34,11 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
         products = Utils.get_products_from_web(urls, redis)
     except Exception as e:
         warning(f"⚠️ Error occurred while fetching products: {str(e)}")
-        return
 
-    # Initialize helpers (Telegram, X, Meta)
+    # Initialize helpers(Telegram, X, Meta)
     telegram = TelegramHelper()
     x = XHelper()
-    meta = MetaHelper()
+    # meta = MetaHelper()
 
     for category in products:
         try:
@@ -52,7 +52,7 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 if product is None:
                     return
 
-                await Utils.send_message(telegram, x, meta, product)
+                await Utils.send_message(telegram, x,  product)
 
             redis.add_to_set(cached_url_key, urls, PRODUCT_URL_EXPIRE_TIME)
         except Exception as e:
@@ -60,6 +60,9 @@ async def main(redis: RedisDB, categories: List[ProductCategories]) -> None:
                 f"⚠️ Error occurred while processing category {category.value}: {str(e)}")
             continue
 
+# TODO: If Discount is more than 90% then also send Story on Instagram and Facebook.
+# TODO: Instead of send image url in (Instagram,Facebook). Send image data and get image url from meta api and send them on instagram.
+# TODO: Edit product download image, Add Price Tag on them.
 
 if __name__ == "__main__":
     with RedisDB() as redis_db:

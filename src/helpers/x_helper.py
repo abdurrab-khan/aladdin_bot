@@ -70,7 +70,7 @@ class XHelper:
         if response.status_code != 201:
             warning(f"⚠️ Failed to send message on X 🕊️: {response.text}")
         else:
-            info(f"✅ Message successfully sent to X 🕊️")
+            info(f"✅ Message successfully sended to X 🕊️")
 
     @retry(3)
     def upload_media(self, img_path: str) -> str:
