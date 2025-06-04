@@ -366,7 +366,10 @@ class WebsiteScraper:
             product_details: Product = DataProcessingHelper.get_product_details(
                 soup, website_name)
 
-            if product_details is None or not DataProcessingHelper.is_product_valid(product_details["product_url"], product_details["product_discount"], PRICE_LIMITS[self.category], self.redis_client):
+            if product_details is None:
+                continue
+
+            if not DataProcessingHelper.is_product_valid(product_details["product_url"], product_details["product_discount"], PRICE_LIMITS[self.category], self.redis_client):
                 continue
 
             if predict_deal(product_details)["prediction"] != "Best Deal" or self.processed_product_urls.__contains__(product_details["product_url"]):
@@ -374,7 +377,6 @@ class WebsiteScraper:
 
             products.append(product_details)
             self.processed_product_urls.add(product_details["product_url"])
-
             info(
                 f"✅ Best Deal found! 🛍️  {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | {website_name.value}")
 
@@ -488,8 +490,6 @@ class AmazonScraper(WebsiteScraper):
         self.driver_utility._webdriver_wait(
             lambda d: d.current_url != current_url)
 
-        sleep(uniform(1, 3))
-
 
 class FlipkartScraper(WebsiteScraper):
     """
@@ -541,7 +541,6 @@ class FlipkartScraper(WebsiteScraper):
             products.append(product_details)
             self.processed_product_urls.add(product_details["product_url"])
 
-            sleep(uniform(1, 1.8))
             info(
                 f"✅ Best Deal found! 🛍️  {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | flipkart")
 
@@ -593,8 +592,6 @@ class FlipkartScraper(WebsiteScraper):
         self.driver_utility._webdriver_wait(
             lambda d: d.current_url != current_url)
 
-        sleep(uniform(1, 3))
-
     def __get_product_details(self, url: str) -> Optional[Product]:
         """
         Extract product details from the given URL.
@@ -615,11 +612,16 @@ class FlipkartScraper(WebsiteScraper):
         product_details: Product = DataProcessingHelper.get_product_details(
             container, Websites.FLIPKART)
 
+        if not product_details:
+            return None
+
         product_details["product_url"] = DataProcessingHelper.short_url_with_affiliate_code(
             url, Websites.FLIPKART)
 
         if predict_deal(product_details)["prediction"] != "Best Deal":
             return None
+
+        sleep(uniform(1, 1.8))
 
         return product_details
 
@@ -680,9 +682,8 @@ class MyntraScraper(WebsiteScraper):
             lambda d: d.current_url != current_url or set(d.find_elements(
                 By.CSS_SELECTOR, PRODUCT_CARDS[Websites.MYNTRA])) != old_product)
 
-        sleep(uniform(1, 3))
 
-
+# TODO: FIX:- 2025-05-17 08:47:06,828 - ERROR - selenium_helper.py:748 - ⛔ Error scraping Websites.FLIPKART products: 'NoneType' object does not support item assignment
 class SeleniumHelper:
     """
     Main class to coordinate the scraping operations across different websites.
@@ -747,7 +748,7 @@ class SeleniumHelper:
 
                 scraper.go_to_next_page()
                 page_counter += 1
-                sleep(uniform(1, 2.5))
+                sleep(uniform(1, 3))
             return all_products
         except Exception as e:
             error(f"⛔ Error scraping {website_name} products: {str(e)}")
