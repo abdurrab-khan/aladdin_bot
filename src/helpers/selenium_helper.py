@@ -118,7 +118,7 @@ class DataProcessingHelper:
     """
 
     @staticmethod
-    def get_product_details(soup: BeautifulSoup, website_name: Websites) -> Product:
+    def get_product_details(soup: BeautifulSoup, website_name: Websites, category: ProductCategories) -> Product:
         """
         Extract product details from the BeautifulSoup object.
 
@@ -146,6 +146,7 @@ class DataProcessingHelper:
                 product_details = None
                 break
 
+        product_details["category"] = category
         return product_details
 
     @staticmethod
@@ -362,9 +363,12 @@ class WebsiteScraper:
 
         for soup in products_soup:
             product_details: Product = DataProcessingHelper.get_product_details(
-                soup, website_name)
+                soup, website_name, self.category)
 
-            if product_details is None or not DataProcessingHelper.is_product_valid(product_details["product_url"], product_details["product_discount"], PRICE_LIMITS[self.category], self.redis_client):
+            if product_details is None:
+                continue
+
+            if not DataProcessingHelper.is_product_valid(product_details["product_url"], product_details["discount_price"], PRICE_LIMITS[self.category], self.redis_client):
                 continue
 
             if predict_deal(product_details) != "Best Deal" or self.processed_product_urls.__contains__(product_details["product_url"]):
@@ -374,7 +378,7 @@ class WebsiteScraper:
             self.processed_product_urls.add(product_details["product_url"])
 
             info(
-                f"✅ Best Deal found! 🛍️  {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | {website_name.value}")
+                f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details['average_rating']} | {website_name.value}")
 
         return products
 
@@ -521,16 +525,15 @@ class FlipkartScraper(WebsiteScraper):
         for soup in products_soup:
             url = soup.select_one(
                 " ,".join(PRODUCT_DETAILS[Websites.FLIPKART]["product_url"]))
-            discount_price = DataProcessingHelper.format_extracted_data("product_discount", soup.select_one(
-                " ,".join(PRODUCT_DETAILS[Websites.FLIPKART]["product_discount"])), Websites.FLIPKART)
+            discount_price = DataProcessingHelper.format_extracted_data("discount_price", soup.select_one(
+                " ,".join(PRODUCT_DETAILS[Websites.FLIPKART]["discount_price"])), Websites.FLIPKART)
             formatted_url = DataProcessingHelper.format_extracted_data(
                 "product_url", url, Websites.FLIPKART)
 
             if not DataProcessingHelper.is_product_valid(formatted_url, discount_price, PRICE_LIMITS[self.category], self.redis_client) or self.processed_product_urls.__contains__(formatted_url):
                 continue
 
-            product_details: Product = self.__get_product_details(
-                url["href"])
+            product_details: Product = self.__get_product_details(url["href"])
 
             if not product_details:
                 continue
@@ -539,7 +542,7 @@ class FlipkartScraper(WebsiteScraper):
             self.processed_product_urls.add(product_details["product_url"])
 
             info(
-                f"✅ Best Deal found! 🛍️  {product_details['product_name']} | 💰 Price: ₹{product_details['product_discount']} | ⭐ Rating: {product_details['product_rating']} | flipkart")
+                f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details['average_rating']} | flipkart")
 
         return products
 
@@ -609,7 +612,7 @@ class FlipkartScraper(WebsiteScraper):
             return None
 
         product_details: Product = DataProcessingHelper.get_product_details(
-            container, Websites.FLIPKART)
+            container, Websites.FLIPKART, self.category)
 
         product_details["product_url"] = DataProcessingHelper.short_url_with_affiliate_code(
             url, Websites.FLIPKART)
@@ -719,8 +722,6 @@ class SeleniumHelper:
                     return all_products if all_products else None
 
                 page_products = scraper.extract_products(container)
-
-                print(page_products)
 
                 # Prevent infinite loop if no products are found
                 if len(page_products) == 0:

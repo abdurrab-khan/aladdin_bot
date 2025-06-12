@@ -1,5 +1,4 @@
 from logging import error
-from collections import defaultdict
 from typing import Dict, List, Optional
 from selenium.common.exceptions import WebDriverException, TimeoutException
 
@@ -7,14 +6,14 @@ from selenium.common.exceptions import WebDriverException, TimeoutException
 from ..db.redis import RedisDB
 from ..constants.product import PRICE_LIMITS
 from ..constants.url import BASE_URLS, AMAZON_URL_PROPERTIES
-from ..helpers import HelperFunctions, SeleniumHelper, TelegramHelper, XHelper, MetaHelper
-from ..lib.types import Product, ProductVariants, Websites, SendMessageTo, ProductCategories, Properties
+from ..helpers import HelperFunctions, SeleniumHelper
+from ..lib.types import Product, Websites, ProductCategories, Properties
 
 
 class Utils:
     # Utility functions
     @staticmethod
-    def get_products_from_web(urls: Dict[ProductCategories, Dict[Websites, str]], redis: RedisDB) -> Dict[ProductCategories, List[Product]]:
+    def get_products_from_web(urls: Dict[ProductCategories, Dict[Websites, str]], redis: RedisDB):
         """
         Get the products from the websites using Selenium.
 
@@ -25,7 +24,6 @@ class Utils:
             Dict[ProductCategories, List[Product]] - The fetched products.
         """
         selenium_helper = SeleniumHelper(redis)
-        products: Dict[ProductCategories, List[Product]] = defaultdict(list)
 
         try:
             for category in urls:
@@ -35,7 +33,8 @@ class Utils:
                             website, category, url)
 
                         if fetched_product:
-                            products[category].extend(fetched_product)
+                            # Add it into the supabase.
+                            pass
 
                     except (WebDriverException, TimeoutException) as e:
                         error(
@@ -47,8 +46,6 @@ class Utils:
                         continue
         finally:
             selenium_helper.close()
-
-        return dict(products)
 
     @staticmethod
     def filter_products(products: List[Product]) -> List[Product | ProductVariants]:
