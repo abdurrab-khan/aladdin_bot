@@ -1,10 +1,12 @@
+from json import dumps
+from logging import error
 from typing import List
 from supabase import create_client, Client
 from supabase.client import ClientOptions
 from os import getenv
 
-from helpers.helper_functions import retry
-from lib.types import Product
+from ..helpers.helper_functions import retry
+from ..lib.types import Product
 
 
 class SupaBaseClient:
@@ -20,16 +22,38 @@ class SupaBaseClient:
 
         self.MAIN_TABLE = "products"
 
-        self.supabase_client: Client = create_client(
-            self.supabase_url,
-            self.supabase_key,
-            options=ClientOptions(
-                postgrest_client_timeout=10,
-                storage_client_timeout=10,
-                schema="public"
+    def __enter__(self):
+
+        try:
+            supabase_client: Client = create_client(
+                self.supabase_url,
+                self.supabase_key,
+                options=ClientOptions(
+                    postgrest_client_timeout=10,
+                    storage_client_timeout=10,
+                    schema="public"
+                )
             )
-        )
+
+            self.supabase = supabase_client
+
+            return self
+        except Exception as e:
+            error(f"⛔ Unexpected error: {e}")
+            return False
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type:
+            error(
+                f"⛔ An error occurred while disconnecting the db: {exc_value}")
+            return False
+
+        return True
 
     @retry(3)
     def insert_products(self, products: List[Product]):
-        response = self.supabase_client.table(self.MAIN_TABLE).insert(products)
+        res = self.supabase.rpc("insert_products", {
+            "products": products
+        }).execute()
+
+        return res

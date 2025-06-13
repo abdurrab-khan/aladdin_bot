@@ -13,6 +13,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+from ..constants.const import ASSOCIATED_APP
+
 from ..db.redis import RedisDB
 from .helper_functions import retry
 from ..lib.ml_model.predict_deal import predict_deal
@@ -20,6 +22,42 @@ from ..lib.types import Websites, ProductCategories, ProductKey, Product
 from ..constants.css_selectors import NEXT_BUTTON, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS
 from ..constants.product import PRICE_LIMITS, MAX_PRODUCTS_PER_WEBSITE
 from ..constants.url import AMAZON_AFFILIATE_ID, FLIPKART_AFFILIATE_ID, MYNTRA_AFFILIATE_ID
+
+
+def format_num_to_str(input_num):
+    """
+    Takes a number or a string like '5,500', converts it to an integer,
+    then formats it in short form with suffixes (k, M, B, T).
+
+    Args:
+        input_num (int or str): Number to format, e.g., '5,500' or 20000
+
+    Returns:
+        str: Formatted number string
+    """
+    if isinstance(input_num, str):
+        try:
+            input_num = int(input_num.replace(",", ""))
+        except ValueError:
+            warning(
+                "Input must be a string representing an integer (e.g., '5,500' or '20000')")
+            return None
+
+    if not isinstance(input_num, int):
+        warning(
+            "Input must be an integer or a string representing an integer.")
+        return None
+
+    if input_num < 1000:
+        return f"{input_num:,}"
+    elif input_num < 1_000_000:
+        return f"{input_num / 1_000:.1f}k".rstrip("0").rstrip(".")
+    elif input_num < 1_000_000_000:
+        return f"{input_num / 1_000_000:.1f}M".rstrip("0").rstrip(".")
+    elif input_num < 1_000_000_000_000:
+        return f"{input_num / 1_000_000_000:.1f}B".rstrip("0").rstrip(".")
+    else:
+        return f"{input_num / 1_000_000_000_000:.1f}T".rstrip("0").rstrip(".")
 
 
 class WebDriverUtility:
@@ -146,11 +184,13 @@ class DataProcessingHelper:
                 product_details = None
                 break
 
-        product_details["category"] = category
+        product_details["category"] = category,
+        product_details["associated_app"] = ASSOCIATED_APP
+
         return product_details
 
     @staticmethod
-    def format_extracted_data(key: ProductKey, element_data: BeautifulSoup | None, website_name: Websites) -> Union[float, int, str, None]:
+    def format_extracted_data(key: ProductKey, element_data: BeautifulSoup | None, website_name: Websites) -> Union[float, str, None]:
         """
         Format the extracted data based on the selector type.
 
@@ -164,39 +204,48 @@ class DataProcessingHelper:
         if element_data is None:
             return None
 
-        if key == "product_image_url" or key == "product_url":
+        if key == "product_image" or key == "product_url":
             attr = "href" if key == "product_url" else "src"
             element = element_data[attr]
 
-            return element if key == "product_image_url" else DataProcessingHelper.short_url_with_affiliate_code(element, website_name)
+            return element if key == "product_image" else DataProcessingHelper.short_url_with_affiliate_code(element, website_name)
         else:
             element = element_data.get_text(strip=True)
 
         if website_name == Websites.AMAZON:
-            if key == "product_price" or key == "product_discount":
-                return int(float(element.replace(",", "").replace("₹", "")))
+            if key == "price" or key == "discount_price":
+                return float(element.replace(",", "").replace("₹", ""))
 
-            elif key == "product_rating":
+            elif key == "average_rating":
                 return float(element.split(" ")[0])
 
-        elif website_name == Websites.FLIPKART:
-            if key == "product_price" or key == "product_discount":
-                return int(float(element.replace(",", "").replace("₹", "")))
+            elif key == "review_count":
+                return format_num_to_str(element)
 
-            elif key == "product_rating":
+        elif website_name == Websites.FLIPKART:
+            if key == "price" or key == "discount_price":
+                return float(element.replace(",", "").replace("₹", ""))
+
+            elif key == "average_rating":
                 return float(element)
+
+            elif key == "review_count":
+                return format_num_to_str(element.split(" ")[0])
 
         elif website_name == Websites.MYNTRA:
-            if key == "product_price" or key == "product_discount":
-                return int(float(element.replace("Rs.", "").replace(",", "")))
+            if key == "price" or key == "discount_price":
+                return float(element.replace("Rs.", "").replace(",", ""))
 
-            elif key == "product_rating":
+            elif key == "average_rating":
                 return float(element)
+
+            elif key == "review_count":
+                return element
 
         return element
 
     @staticmethod
-    def is_product_valid(url: str, discount_price: int, price_limit: int, redis: RedisDB) -> bool:
+    def is_product_valid(url: str, discount_price: float, price_limit: int, redis: RedisDB) -> bool:
         """
         Validate if a product has the necessary information.
 
@@ -345,7 +394,7 @@ class WebsiteScraper:
 
         return main_container
 
-    def extract_products(self, container: BeautifulSoup, website_name: Websites) -> List[Product]:
+    def extract_products(self, container: BeautifulSoup, website_name: Websites) -> List[Product] | None:
         """
         Extract products from the container.
 
