@@ -1,21 +1,8 @@
 from ..lib.types import ProductCategories
 
-# Path to the images directory where product images will be saved.
-IMAGE_PATH = "images"
 
 # Maximum number of products to scrape from each website during a search operation
-MAX_PRODUCTS_PER_WEBSITE = 20
-
-# Required keys for product data.
-# These keys are used to ensure that the scraped product data contains all necessary information.
-REQUIRED_PRODUCT_KEYS = {
-    "product_name",
-    "product_price",
-    "product_discount",
-    "product_image_url",
-    "product_rating",
-    "product_url"
-}
+MAX_PRODUCTS_PER_WEBSITE = 15
 
 # Product categories for different e-commerce websites.
 PRODUCTS_PER_CATEGORY = {

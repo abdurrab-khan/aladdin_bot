@@ -2,6 +2,8 @@ from logging import error
 from typing import Dict, List
 from selenium.common.exceptions import WebDriverException, TimeoutException
 
+from .best_discount_analyzer import BestDiscountAnalyzer
+
 from ..constants.product import PRICE_LIMITS
 from ..constants.url import AMAZON_URL_PROPERTIES, BASE_URLS
 from ..db.supabase import SupaBaseClient
@@ -10,6 +12,7 @@ from ..db.supabase import SupaBaseClient
 from ..db.redis import RedisDB
 from ..helpers import SeleniumHelper
 from ..lib.types import Properties, Websites, ProductCategories
+from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 
 
 class Utils:
@@ -25,7 +28,8 @@ class Utils:
         return:
             Dict[ProductCategories, List[Product]] - The fetched products.
         """
-        selenium_helper = SeleniumHelper(redis)
+        discount_analyzer = BestDiscountAnalyzer()
+        selenium_helper = SeleniumHelper(redis, discount_analyzer)
 
         try:
             for category in urls:
@@ -34,7 +38,7 @@ class Utils:
                         fetched_product = selenium_helper.get_product(
                             website, category, url)
 
-                        if fetched_product:
+                        if fetched_product is not None and len(fetched_product) > 0:
                             supabase.insert_products(fetched_product)
 
                     except (WebDriverException, TimeoutException) as e:
@@ -47,6 +51,7 @@ class Utils:
                         continue
         finally:
             selenium_helper.close()
+            discount_analyzer.clear_cache()
 
     @staticmethod
     def generate_urls(categories: List[ProductCategories]) -> Dict[ProductCategories, Dict[Websites, str]]:

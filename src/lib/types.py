@@ -4,11 +4,10 @@ from typing import TypedDict, Literal
 
 class Product(TypedDict):
     name: str
-    description: str
     price: float
     discount_price: float
-    average_rating: float
-    review_count: str
+    rating: float
+    rating_count: int
     product_image: str
     product_url: str
     category: str
@@ -17,11 +16,10 @@ class Product(TypedDict):
 
 ProductKey = Literal[
     "name",
-    "description",
     "price",
     "discount_price",
-    "average_rating",
-    "review_count",
+    "rating",
+    "rating_count",
     "product_image",
     "product_url",
 ]

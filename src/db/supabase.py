@@ -1,12 +1,29 @@
-from json import dumps
-from logging import error
+from logging import error, warning
+from time import sleep
 from typing import List
 from supabase import create_client, Client
 from supabase.client import ClientOptions
 from os import getenv
 
-from ..helpers.helper_functions import retry
 from ..lib.types import Product
+
+
+def retry(max_retries: int):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for retry_count in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if retry_count < max_retries - 1:
+                        wait_time = 2 ** retry_count
+                        warning(
+                            f"Attempt {retry_count + 1}/{max_retries} failed: {str(e)}. Retrying in {wait_time} seconds...")
+                        sleep(wait_time)
+                    else:
+                        return None
+        return wrapper
+    return decorator
 
 
 class SupaBaseClient:

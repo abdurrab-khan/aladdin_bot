@@ -31,15 +31,15 @@ def predict_deal(product_data: Product) -> dict['prediction': str, 'confidence':
     """
     model, feature_names = load_model()
     if isinstance(product_data, dict):
-        product_data = DataFrame([product_data])
+        cp_product_data = DataFrame([product_data])
 
-    if 'discount_percentage' not in product_data.columns:
-        product_data['discount_percentage'] = (
-            product_data['product_discount'] / product_data['product_price']) * 100
+    if 'discount_percentage' not in cp_product_data.columns:
+        cp_product_data['discount_percentage'] = (
+            product_data['discount_price'] / product_data['price']) * 100
 
-    if 'discount_amount' not in product_data.columns:
-        product_data['discount_amount'] = product_data['product_price'] - \
-            product_data['product_discount']
+    if 'discount_amount' not in cp_product_data.columns:
+        cp_product_data['discount_amount'] = product_data['price'] - \
+            product_data['discount_price']
 
     X = product_data[feature_names]
 
