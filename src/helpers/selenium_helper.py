@@ -149,7 +149,8 @@ class DataProcessingHelper:
                 return None
 
         if product_details:
-            product_details["category"] = category.name
+            product_details["website_name"] = website_name.value
+            product_details["category"] = category.value
             product_details["associated_app"] = ASSOCIATED_APP
 
         return product_details

@@ -10,6 +10,7 @@ class Product(TypedDict):
     rating_count: int
     product_image: str
     product_url: str
+    website_name: str
     category: str
     associated_app: str
 
