@@ -16,6 +16,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 
 from ..constants.const import ASSOCIATED_APP
+from ..constants.url import PLATFORM_IDS
 
 from ..db.redis import RedisDB
 from .helper_functions import HelperFunctions, retry
@@ -149,7 +150,7 @@ class DataProcessingHelper:
                 return None
 
         if product_details:
-            product_details["website_name"] = website_name.value
+            product_details["platform_id"] = PLATFORM_IDS[website_name.value]
             product_details["category"] = category.value
             product_details["associated_app"] = ASSOCIATED_APP
 

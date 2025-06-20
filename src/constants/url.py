@@ -1,12 +1,6 @@
 from typing import Dict
 from ..lib.types import ProductCategories, Properties, Websites
 
-# Affiliate IDs for different e-commerce websites.
-# These IDs are used to track referrals and earn commissions on sales generated through the bot.
-AMAZON_AFFILIATE_ID = "?tag=aladdinloot3-21"
-FLIPKART_AFFILIATE_ID = "?affid=admitad&affExtParam1=298614"
-MYNTRA_AFFILIATE_ID = "?utm_source=admitad&utm_medium=affiliate"
-
 # Web URLs for different e-commerce websites.
 # These URLs are used to scrape product data from the respective websites.
 BASE_URLS: Dict[Websites, str] = {
@@ -29,6 +23,13 @@ BASE_URLS: Dict[Websites, str] = {
         "&p[]=facets.price_range.to={max_price}"
     ),
     Websites.MYNTRA: "https://www.myntra.com/{query}?f=Gender%3Amen%2Cmen%20women&rawQuery={query}&rf=Discount%20Range%3A80.0_100.0_80.0%20TO%20100.0%3A%3APrice%3A250.0_{max_price}.0_250.0%20TO%20{max_price}.0"
+}
+
+# Supabase Plateform id
+PLATFORM_IDS = {
+    "amazon": "55a353b7-5d4a-455f-b600-2803d7e545f3",
+    "flipkart": "3a09abed-0d57-4914-a535-ec8fedbe9c71",
+    "myntra": "cf0e243b-ab7b-40b0-8d33-fe56f75101e5"
 }
 
 # Product categories and their corresponding properties for Amazon.

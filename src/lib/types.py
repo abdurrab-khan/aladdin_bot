@@ -13,6 +13,7 @@ class Product(TypedDict):
     website_name: str
     category: str
     associated_app: str
+    platform_id: str
 
 
 ProductKey = Literal[
