@@ -1,1 +1,4 @@
-ASSOCIATED_APP = "4e52163e-714d-471b-917b-48d2869dd0de"
+from os import getenv
+
+ASSOCIATED_APP = getenv("ASSOCIATED_APP")
+USER_ID = getenv("USER_ID")

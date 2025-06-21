@@ -14,6 +14,7 @@ class Product(TypedDict):
     category: str
     associated_app: str
     platform_id: str
+    user_id: str
 
 
 ProductKey = Literal[

@@ -26,7 +26,12 @@ async def main(redis: RedisDB, supabase: SupaBaseClient, categories: List[Produc
                ] = Utils.generate_urls(categories)
 
     try:
-        Utils.get_products_from_web(urls, redis, supabase)
+        products = Utils.get_products_from_web(urls, redis)
+
+        # Let's add products in to the supabase database
+        if len(products) > 0:
+            supabase.insert_products(products)
+
     except Exception as e:
         warning(f"⚠️ Error occurred while fetching products: {str(e)}")
 

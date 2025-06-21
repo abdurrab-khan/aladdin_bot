@@ -4,28 +4,6 @@ from ..lib.types import ProductCategories
 # Maximum number of products to scrape from each website during a search operation
 MAX_PRODUCTS_PER_WEBSITE = 15
 
-# Product categories for different e-commerce websites.
-PRODUCTS_PER_CATEGORY = {
-    ProductCategories.JEANS: 3,
-    ProductCategories.TSHIRT: 3,
-    ProductCategories.SHIRT: 3,
-    ProductCategories.CARGO: 2,
-    ProductCategories.FOOTWEAR: 2,
-    ProductCategories.JACKET: 2,
-    ProductCategories.SHORTS: 2,
-    ProductCategories.SWEATSHIRTS: 3,
-    ProductCategories.TRACKPANT: 3,
-    ProductCategories.TROUSER: 3,
-    ProductCategories.CASUAL_SHOES: 3,
-    ProductCategories.FORMAL_SHOES: 3,
-    ProductCategories.SPORTS_SHOES: 3,
-    ProductCategories.SNEAKERS: 3,
-    ProductCategories.WALLET: 2,
-    ProductCategories.WATCHES: 2,
-    ProductCategories.SUNGLASSES: 2,
-    ProductCategories.PERFUME: 3,
-}
-
 PRICE_LIMITS = {
     ProductCategories.JEANS: 2500,
     ProductCategories.TSHIRT: 1500,
