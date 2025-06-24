@@ -498,11 +498,17 @@ class AmazonScraper(WebsiteScraper):
         Returns:
             bool: True if there is a next page, False otherwise.
         """
-        current_url = self.driver_utility.driver.current_url
-        self.driver_utility.safe_find_element(
-            NEXT_BUTTON[Websites.AMAZON])[0].click()
+        if self.driver_utility.driver is None or self.driver_utility is None:
+            return False
 
-        print(f"Current url is:- {current_url}")
+        current_url = self.driver_utility.driver.current_url
+        next_button_elements = self.driver_utility.safe_find_element(
+            NEXT_BUTTON[Websites.AMAZON])
+
+        if next_button_elements is None or len(next_button_elements) == 0:
+            return False
+
+        next_button_elements[0].click()
 
         self.driver_utility._webdriver_wait(
             lambda d: d.current_url != current_url)
@@ -767,13 +773,12 @@ class SeleniumHelper:
 
                     if empty_page_count > 13:
                         break
-
-                    continue
                 else:
                     if empty_page_count > 0:
                         empty_page_count = 0
 
-                all_products.extend(page_products)
+                    # Add new product into the list
+                    all_products.extend(page_products)
 
                 if len(all_products) > MAX_PRODUCTS_PER_WEBSITE:
                     all_products = all_products[:MAX_PRODUCTS_PER_WEBSITE]
@@ -782,7 +787,11 @@ class SeleniumHelper:
                 if not scraper.has_next_page():
                     break
 
-                scraper.go_to_next_page()
+                go_next_page = scraper.go_to_next_page()
+
+                if go_next_page == False:
+                    break
+
                 page_counter += 1
                 sleep(1)
 
