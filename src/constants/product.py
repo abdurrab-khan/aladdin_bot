@@ -2,7 +2,7 @@ from ..lib.types import ProductCategories
 
 
 # Maximum number of products to scrape from each website during a search operation
-MAX_PRODUCTS_PER_WEBSITE = 15
+MAX_PRODUCTS_PER_WEBSITE = 25
 
 PRICE_LIMITS = {
     ProductCategories.JEANS: 2500,

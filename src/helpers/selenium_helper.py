@@ -40,7 +40,7 @@ class WebDriverUtility:
         """Set up the Chrome WebDriver with appropriate options"""
 
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument(
@@ -501,6 +501,8 @@ class AmazonScraper(WebsiteScraper):
         current_url = self.driver_utility.driver.current_url
         self.driver_utility.safe_find_element(
             NEXT_BUTTON[Websites.AMAZON])[0].click()
+
+        print(f"Current url is:- {current_url}")
 
         self.driver_utility._webdriver_wait(
             lambda d: d.current_url != current_url)

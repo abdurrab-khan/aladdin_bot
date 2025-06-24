@@ -4,7 +4,7 @@ from selenium.common.exceptions import WebDriverException, TimeoutException
 
 from .best_discount_analyzer import BestDiscountAnalyzer
 
-from ..constants.product import MAX_PRODUCTS_PER_WEBSITE, PRICE_LIMITS
+from ..constants.product import PRICE_LIMITS
 from ..constants.url import AMAZON_URL_PROPERTIES, BASE_URLS
 
 
@@ -12,6 +12,8 @@ from ..db.redis import RedisDB
 from ..helpers import SeleniumHelper
 from ..lib.types import Product, Properties, Websites, ProductCategories
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
+
+MAX_PRODUCT_TO_SEND = 15
 
 
 class Utils:
@@ -120,6 +122,6 @@ class Utils:
             return []
 
         sorted_products = (sorted(products, key=lambda x: x["discount_price"]))[
-            :MAX_PRODUCTS_PER_WEBSITE]
+            :MAX_PRODUCT_TO_SEND]
 
         return sorted_products
