@@ -42,8 +42,10 @@ class Utils:
                         fetched_product = selenium_helper.get_product(
                             website, category, url)
 
-                        if fetched_product is not None and len(fetched_product) > 0:
-                            products_by_cat = fetched_product
+                        if fetched_product is None or len(fetched_product) == 0:
+                            continue
+
+                        products_by_cat.extend(fetched_product)
 
                     except (WebDriverException, TimeoutException) as e:
                         error(
@@ -58,10 +60,11 @@ class Utils:
                 if len(products_by_cat) > 0:
                     best_discounted_products = Utils.sort_products(
                         products_by_cat)
+
                     all_products.extend(best_discounted_products)
 
-                    # Let's clear products_by_cat
-                    products_by_cat = []
+                # Let's clear products_by_cat
+                products_by_cat = []
         finally:
             selenium_helper.close()
             discount_analyzer.clear_cache()
