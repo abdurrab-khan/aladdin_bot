@@ -240,7 +240,7 @@ class DataProcessingHelper:
             formatted_url = f"https://www.amazon.in/dp/{product_id}" if product_id is not None else None
 
         elif website_name == Websites.FLIPKART:
-            formatted_url = f"https://www.flipkart.com{url.split("?")[0]}"
+            formatted_url = f"https://www.flipkart.com{url.split('?')[0]}"
 
         elif website_name == Websites.MYNTRA:
             formatted_url = f"https://www.myntra.com/{url}"
