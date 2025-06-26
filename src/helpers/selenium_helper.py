@@ -771,8 +771,11 @@ class SeleniumHelper:
                 if page_products is None or len(page_products) == 0:
                     empty_page_count += 1
 
-                    if empty_page_count > 13:
+                    if empty_page_count > 5:
+                        warning(
+                            f"⚠️ No products found on page {page_counter} for {website_name.value}. Stopping further scraping.")
                         break
+
                 else:
                     if empty_page_count > 0:
                         empty_page_count = 0
