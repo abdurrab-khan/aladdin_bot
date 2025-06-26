@@ -114,6 +114,9 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
 =======
     hour = 6
     week_day = "sunday"
+<<<<<<< HEAD
+>>>>>>> 011704dab99678c4159177bc7abbbd2ea6759ae4
+=======
 >>>>>>> 011704dab99678c4159177bc7abbbd2ea6759ae4
 
     categories_today = daily_categories.get(week_day, [])
