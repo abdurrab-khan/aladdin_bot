@@ -1,19 +1,54 @@
-name: Scheduled Task
+name: Aladdin Scheduled Task
 
 on:
   schedule:
-    - cron: '30 0 * * *'   # 6:00 AM IST
-    - cron: '30 16 * * *'  # 10:00 PM IST
+    # 6:00 AM IST = 12:30 AM UTC (Tue, Wed, Fri, Sat, Sun)
+    - cron: '30 0 * * 2,3,5,6,0'
+    # 10:00 PM IST = 4:30 PM UTC (Tue, Wed, Fri, Sat, Sun)
+    - cron: '30 16 * * 2,3,5,6,0'
 
 jobs:
-  run-scheduled-task:
+  run-script:
     runs-on: ubuntu-latest
-    if: |
-      contains('Tue Wed Fri Sat Sun', format('ddd', github.event.schedule))
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Run your script or command
+    # Run only when on 'feat/supabase' branch
+    if: github.ref == 'refs/heads/feat/supabase'
+
+    env:
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        ASSOCIATED_APP: ${{ secrets.ASSOCIATED_APP }}
+        USER_ID: ${{ secrets.USER_ID }}
+
+
+    steps:
+      - name: Checkout feat/supabase branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/supabase
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            venv-${{ runner.os }}-
+
+      - name: Set up virtual environment and install dependencies
         run: |
-          echo "Running scheduled job on $(date)"
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+            
+
+      - name: Run the script
+        run: |
+          source .venv/bin/activate
+          python -m src.main
