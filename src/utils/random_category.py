@@ -111,7 +111,7 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     ist_now = utc_now.astimezone(timezone("Asia/Kolkata"))
     hour = ist_now.hour
     hour = 6
-    week_day = "monday"
+    week_day = "sunday"
 
     categories_today = daily_categories.get(week_day, [])
     if not categories_today:
