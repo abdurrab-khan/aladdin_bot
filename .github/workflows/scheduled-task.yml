@@ -36,21 +36,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache virtual environment
+      - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            venv-${{ runner.os }}-
-
-      - name: Set up virtual environment and install dependencies
+            pip-${{ runner.os }}-
+    
+      - name: Install dependencies
         run: |
           python -m venv .venv
           source .venv/bin/activate
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-            
 
       - name: Run the script
         run: |
