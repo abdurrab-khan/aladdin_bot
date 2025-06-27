@@ -31,6 +31,8 @@ async def main(redis: RedisDB, supabase: SupaBaseClient, categories: List[Produc
         # Let's add products in to the supabase database
         if len(products) > 0:
             supabase.insert_products(products)
+        else:
+            warning("⚠️ No products found to insert into the database.")
 
     except Exception as e:
         warning(f"⚠️ Error occurred while fetching products: {str(e)}")

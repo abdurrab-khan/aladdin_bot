@@ -167,7 +167,7 @@ class RedisDB:
         return self.client.delete(key)
 
     @redis_call
-    def is_url_cached(self, url: str, pattern: str = f"{PRODUCT_URL_CACHE_KEY}*") -> bool:
+    def is_url_cached(self, url: str, pattern: str = f"{URL_CACHE}*") -> bool:
         """
         Check if the given URL is already in the Redis database.
 
