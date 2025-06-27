@@ -46,6 +46,7 @@ class WebDriverUtility:
         chrome_options.add_argument(
             "--disable-blink-features=AutomationControlled")
         chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument('--memory-pressure-off')
 
         user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -61,6 +62,7 @@ class WebDriverUtility:
         """Navigate to the specified URL"""
         if self.driver:
             self.driver.get(url)
+            sleep(uniform(1, 3.5))
 
     def safe_find_element(self, selectors: List[str] | str, timeout: int = 5) -> Optional[List[WebElement]]:
         """
@@ -767,13 +769,20 @@ class SeleniumHelper:
 
                 page_products = scraper.extract_products(container)
 
+                #  Check if we have less than 15 products and page_counter is greater than 20
+                # This is to prevent scraping too many pages if not enough products are found
+                if len(all_products) < 15 and page_counter >= 20:
+                    warning(
+                        f"⚠️  Less than 15 products found on page {page_counter} for {website_name.value}. Stopping further scraping.")
+                    break
+
                 # Prevent infinite loop if no products are found
                 if page_products is None or len(page_products) == 0:
                     empty_page_count += 1
 
-                    if empty_page_count > 5:
+                    if empty_page_count >= 8:
                         warning(
-                            f"⚠️ No products found on page {page_counter} for {website_name.value}. Stopping further scraping.")
+                            f"⚠️  No products found on page {page_counter} for {website_name.value}. Stopping further scraping.")
                         break
 
                 else:
