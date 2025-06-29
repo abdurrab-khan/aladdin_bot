@@ -119,7 +119,7 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     if hour >= 6 and hour <= 10:
         categories_today = categories_today[:2]
         info("🌄 Running morning products (6 AM):")
-    elif hour >= 22 and hour <= 2:
+    elif hour >= 22 and hour <= 23:
         categories_today = [categories_today[-1]]
         info("🌙 Running night product (10 PM):")
     else:
