@@ -116,7 +116,7 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
         warning(f"⚠️ Category not found for {week_day.title()}")
         exit(0)
 
-    if hour >= 6 and hour <= 8:
+    if hour >= 6 and hour <= 10:
         categories_today = categories_today[:2]
         info("🌄 Running morning products (6 AM):")
     elif hour >= 22 and hour <= 2:
