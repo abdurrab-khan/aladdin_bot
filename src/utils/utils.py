@@ -2,6 +2,8 @@ from logging import error
 from typing import Dict, List
 from selenium.common.exceptions import WebDriverException, TimeoutException
 
+from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
+
 from .best_discount_analyzer import BestDiscountAnalyzer
 
 from ..constants.product import PRICE_LIMITS
@@ -32,7 +34,7 @@ class Utils:
         discount_analyzer = BestDiscountAnalyzer()
         selenium_helper = SeleniumHelper(redis, discount_analyzer)
 
-        products_by_cat = []
+        products_by_cat: List[Product] = []
         all_products: List[Product] = []
 
         try:
@@ -61,6 +63,15 @@ class Utils:
                     best_discounted_products = Utils.sort_products(
                         products_by_cat)
 
+                    # Let's cache the products url to prevent re-fetching
+                    product_urls = [product["product_url"]
+                                    for product in best_discounted_products]
+
+                    redis.add_to_set(
+                        f"{PRODUCT_URL_CACHE_KEY}_{category.value}",
+                        product_urls,
+                        expire_time=60 * 60 * 4 * 24  # 4 days
+                    )
                     all_products.extend(best_discounted_products)
 
                 # Let's clear products_by_cat
@@ -110,7 +121,7 @@ class Utils:
         return urls
 
     @staticmethod
-    def sort_products(products: List[Product]):
+    def sort_products(products: List[Product]) -> List[Product]:
         """
        Sort the products based on the discount price.
        This function also filters the products based on the discount price.

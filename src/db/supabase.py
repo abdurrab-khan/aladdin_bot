@@ -39,8 +39,7 @@ class SupaBaseClient:
 
         self.MAIN_TABLE = "products"
 
-    def __enter__(self):
-
+    def connect(self):
         try:
             supabase_client: Client = create_client(
                 self.supabase_url,
@@ -58,14 +57,6 @@ class SupaBaseClient:
         except Exception as e:
             error(f"⛔ Unexpected error: {e}")
             return False
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if exc_type:
-            error(
-                f"⛔ An error occurred while disconnecting the db: {exc_value}")
-            return False
-
-        return True
 
     @retry(3)
     def insert_products(self, products: List[Product]):

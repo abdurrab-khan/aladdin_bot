@@ -38,9 +38,22 @@ async def main(redis: RedisDB, supabase: SupaBaseClient, categories: List[Produc
         warning(f"⚠️ Error occurred while fetching products: {str(e)}")
 
 if __name__ == "__main__":
-    with RedisDB() as redis_db, SupaBaseClient() as supabase:
-        if not (redis_db and supabase):
-            raise Exception("Error: During initialization of redis database.")
+    with RedisDB() as redis_db:
+        try:
+            supabase = SupaBaseClient().connect()
 
-        categories = get_daily_category(redis_db)
-        run(main(redis_db, supabase, categories))
+            if not supabase or not supabase.supabase:
+                warning("⚠️ Supabase client is not connected properly.")
+                exit(1)
+
+            if not redis_db:
+                warning("⚠️ Redis client is not connected properly.")
+                exit(1)
+
+            categories = get_daily_category(redis_db)
+
+            run(main(redis_db, supabase, categories))
+        except Exception as e:
+            warning(f"⚠️ Error connecting to Supabase: {str(e)}")
+            supabase = None
+            exit(1)

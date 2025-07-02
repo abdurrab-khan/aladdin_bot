@@ -40,8 +40,13 @@ daily_categories = {
     ],
     "sunday": [
         ProductCategories.SHIRT,
-        ProductCategories.JEANS,
+        ProductCategories.CARGO,
         [random_shoes, "random_shoes"]
+    ],
+    "monday": [
+        ProductCategories.TSHIRT,
+        [random_apparel, "random_apparel"],
+        [random_mens_accessories, "random_mens_accessories"],
     ],
     "tuesday": [
         ProductCategories.SHIRT,
@@ -52,6 +57,11 @@ daily_categories = {
         ProductCategories.JEANS,
         [random_mens_accessories, "random_mens_accessories"],
         ProductCategories.TSHIRT,
+    ],
+    "thursday": [
+        ProductCategories.TSHIRT,
+        [random_apparel, "random_apparel"],
+        [random_shoes, "random_shoes"],
     ],
     "friday": [
         ProductCategories.SHIRT,
@@ -112,14 +122,11 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     hour = ist_now.hour
 
     categories_today = daily_categories.get(week_day, [])
-    if not categories_today:
-        warning(f"⚠️ Category not found for {week_day.title()}")
-        exit(0)
 
-    if hour > 6 and hour < 8:
+    if hour >= 6 and hour <= 8:
         categories_today = categories_today[:2]
         info("🌄 Running morning products (6 AM):")
-    elif hour > 22 or hour < 2:
+    elif hour >= 22 and hour <= 23:
         categories_today = [categories_today[-1]]
         info("🌙 Running night product (10 PM):")
     else:

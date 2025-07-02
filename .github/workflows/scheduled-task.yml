@@ -2,10 +2,10 @@ name: Aladdin Scheduled Task
 
 on:
   schedule:
-    # 6:00 AM IST = 12:30 AM UTC (Tue, Wed, Fri, Sat, Sun)
-    - cron: '30 0 * * 2,3,5,6,0'
-    # 10:00 PM IST = 4:30 PM UTC (Tue, Wed, Fri, Sat, Sun)
-    - cron: '30 16 * * 2,3,5,6,0'
+    # 6:00 AM IST = 12:30 AM UTC 
+    - cron: '30 0 * * *'
+    # 10:00 PM IST = 4:30 PM UTC
+    - cron: '30 16 * * *'
   workflow_dispatch:
 
 jobs:
