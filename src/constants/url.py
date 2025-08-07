@@ -1,5 +1,12 @@
-from typing import Dict
+from typing import Dict, List, TypedDict
 from ..lib.types import ProductCategories, Properties, Websites
+
+
+class ProductUrlDetailsValue(TypedDict):
+    website: List[Websites]
+
+
+PRODUCT_URL_DETAILS_TYPE = Dict[ProductCategories, ProductUrlDetailsValue]
 
 # Web URLs for different e-commerce websites.
 # These URLs are used to scrape product data from the respective websites.
@@ -59,14 +66,6 @@ AMAZON_URL_PROPERTIES: Dict[ProductCategories, Dict[Properties, str]] = {
         Properties.CATEGORY_ID: "1968024031",
         Properties.INDEX: "fashion"
     },
-    ProductCategories.SHORTS: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.SWEATSHIRTS: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
     ProductCategories.TRACKPANT: {
         Properties.CATEGORY_ID: "1968024031",
         Properties.INDEX: "fashion"
@@ -75,36 +74,120 @@ AMAZON_URL_PROPERTIES: Dict[ProductCategories, Dict[Properties, str]] = {
         Properties.CATEGORY_ID: "1968024031",
         Properties.INDEX: "fashion"
     },
-    ProductCategories.CASUAL_SHOES: {
+    ProductCategories.SHOES: {
         Properties.CATEGORY_ID: "1983518031",
         Properties.INDEX: "shoes"
-    },
-    ProductCategories.FORMAL_SHOES: {
-        Properties.CATEGORY_ID: "1983518031",
-        Properties.INDEX: "shoes"
-    },
-    ProductCategories.SPORTS_SHOES: {
-        Properties.CATEGORY_ID: "1983518031",
-        Properties.INDEX: "shoes"
-    },
-    ProductCategories.SNEAKERS: {
-        Properties.CATEGORY_ID: "1983518031",
-        Properties.INDEX: "shoes"
-    },
-    ProductCategories.WALLET: {
-        Properties.CATEGORY_ID: "2454169031",
-        Properties.INDEX: "luggage"
     },
     ProductCategories.WATCHES: {
         Properties.CATEGORY_ID: "2563504031",
         Properties.INDEX: "watches"
     },
-    ProductCategories.SUNGLASSES: {
-        Properties.CATEGORY_ID: "1968036031",
-        Properties.INDEX: "fashion"
+}
+
+FASHION_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+KITCHENWARE_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+HOME_TEXTILES_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+CLEANING_SUPPLIES_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+PERSONAL_CARE_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+FOOD_GROCERY_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+GADGETS_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+HOME_APPLIANCES_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+SMALL_KITCHEN_APPLIANCES_WEBSITES: List[Websites] = [
+    Websites.AMAZON,
+    Websites.FLIPKART,
+    Websites.MYNTRA,
+]
+
+PRODUCT_URL_DETAILS: PRODUCT_URL_DETAILS_TYPE = {
+    ProductCategories.JEANS: {
+        "website": FASHION_WEBSITES
     },
-    ProductCategories.PERFUME: {
-        Properties.CATEGORY_ID: "1374357031",
-        Properties.INDEX: "beauty"
+    ProductCategories.TSHIRT: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.SHIRT: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.CARGO: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.FOOTWEAR: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.JACKET: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.SWEATSHIRTS: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.TRACKPANT: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.TROUSER: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.WATCHES: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.SHOES: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.KITCHENWARE: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.HOME_TEXTILES: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.CLEANING_SUPPLIES: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.FOOD_GROCERY: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.HOME_APPLIANCES: {
+        "website": FASHION_WEBSITES
+    },
+    ProductCategories.SMALL_KITCHEN_APPLIANCES: {
+        "website": FASHION_WEBSITES
     },
 }

@@ -1,14 +1,14 @@
 from pytz import timezone
 from random import choice
 from typing import List, Union
-from logging import warning, info, error
+from logging import info, error
 from datetime import datetime, timezone as dt
 
 from ..db.redis import RedisDB
 from ..lib.types import ProductCategories
 from ..constants.redis_key import PRODUCT_CATEGORY_CACHE_KEY
 
-random_apparel = [
+fashion = [
     ProductCategories.CARGO,
     ProductCategories.FOOTWEAR,
     ProductCategories.JACKET,
@@ -16,20 +16,8 @@ random_apparel = [
     ProductCategories.SWEATSHIRTS,
     ProductCategories.TRACKPANT,
     ProductCategories.TROUSER,
-]
-
-random_shoes = [
-    ProductCategories.CASUAL_SHOES,
-    ProductCategories.FORMAL_SHOES,
-    ProductCategories.SPORTS_SHOES,
-    ProductCategories.SNEAKERS,
-]
-
-random_mens_accessories = [
-    ProductCategories.WALLET,
+    ProductCategories.SHOES,
     ProductCategories.WATCHES,
-    ProductCategories.SUNGLASSES,
-    ProductCategories.PERFUME,
 ]
 
 daily_categories = {
@@ -120,6 +108,7 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     utc_now = datetime.now(dt.utc)
     ist_now = utc_now.astimezone(timezone("Asia/Kolkata"))
     hour = ist_now.hour
+    hour = 6  # For testing purposes, set hour to 6 AM
 
     categories_today = daily_categories.get(week_day, [])
 
