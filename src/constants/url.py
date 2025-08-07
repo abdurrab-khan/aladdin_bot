@@ -138,6 +138,7 @@ SMALL_KITCHEN_APPLIANCES_WEBSITES: List[Websites] = [
     Websites.MYNTRA,
 ]
 
+
 PRODUCT_URL_DETAILS: PRODUCT_URL_DETAILS_TYPE = {
     ProductCategories.JEANS: {
         "website": FASHION_WEBSITES
