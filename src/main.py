@@ -1,5 +1,5 @@
 from asyncio import run
-from typing import Dict, List
+from typing import List
 from dotenv import load_dotenv
 from logging import warning, basicConfig, INFO
 
@@ -7,7 +7,7 @@ from .db.supabase import SupaBaseClient
 from .db.redis import RedisDB
 
 from .utils import Utils, get_daily_category
-from .lib.types import ProductCategories, Websites
+from .lib.types import ProductCategories
 
 load_dotenv()
 
@@ -22,8 +22,7 @@ async def main(redis: RedisDB, supabase: SupaBaseClient, categories: List[Produc
     Main function of the application that is called when the application is run.
     """
 
-    urls: Dict[ProductCategories, Dict[Websites, str]
-               ] = Utils.generate_urls(categories)
+    urls = Utils.generate_urls(categories)
 
     try:
         products = Utils.get_products_from_web(urls, redis)

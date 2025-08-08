@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TypedDict, Literal
+from typing import Dict, List, NotRequired, TypedDict, Literal
 
 
 class Product(TypedDict):
@@ -57,3 +57,14 @@ class ProductCategories(Enum):
 class Properties(Enum):
     CATEGORY_ID = "category_id"
     INDEX = "index"
+
+
+class UrlPropsType(TypedDict):
+    category_id: str
+    index: str
+
+
+class ProductUrlDetailsValue(TypedDict):
+    max_price: int
+    website: List[Websites]
+    amazon_url_props: NotRequired[UrlPropsType]

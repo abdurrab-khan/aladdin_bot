@@ -1,12 +1,8 @@
-from typing import Dict, List, TypedDict
-from ..lib.types import ProductCategories, Properties, Websites
+from typing import Dict
+from ..lib.types import ProductCategories, ProductUrlDetailsValue, Websites
 
 
-class ProductUrlDetailsValue(TypedDict):
-    website: List[Websites]
-
-
-PRODUCT_URL_DETAILS_TYPE = Dict[ProductCategories, ProductUrlDetailsValue]
+MAX_PRODUCTS_PER_WEBSITE = 25
 
 # Web URLs for different e-commerce websites.
 # These URLs are used to scrape product data from the respective websites.
@@ -32,163 +28,207 @@ BASE_URLS: Dict[Websites, str] = {
     Websites.MYNTRA: "https://www.myntra.com/{query}?f=Gender%3Amen%2Cmen%20women&rawQuery={query}&rf=Discount%20Range%3A80.0_100.0_80.0%20TO%20100.0%3A%3APrice%3A250.0_{max_price}.0_250.0%20TO%20{max_price}.0"
 }
 
-# Supabase Plateform id
+# SUPABASE PLATEFORM_IDS
 PLATFORM_IDS = {
     "amazon": "55a353b7-5d4a-455f-b600-2803d7e545f3",
     "flipkart": "3a09abed-0d57-4914-a535-ec8fedbe9c71",
     "myntra": "cf0e243b-ab7b-40b0-8d33-fe56f75101e5"
 }
 
-# Product categories and their corresponding properties for Amazon.
-# These properties are used to filter and search for products on Amazon.
-AMAZON_URL_PROPERTIES: Dict[ProductCategories, Dict[Properties, str]] = {
-    ProductCategories.JEANS: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.TSHIRT: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.SHIRT: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.CARGO: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.FOOTWEAR: {
-        Properties.CATEGORY_ID: "1983518031",
-        Properties.INDEX: "shoes"
-    },
-    ProductCategories.JACKET: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.TRACKPANT: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.TROUSER: {
-        Properties.CATEGORY_ID: "1968024031",
-        Properties.INDEX: "fashion"
-    },
-    ProductCategories.SHOES: {
-        Properties.CATEGORY_ID: "1983518031",
-        Properties.INDEX: "shoes"
-    },
-    ProductCategories.WATCHES: {
-        Properties.CATEGORY_ID: "2563504031",
-        Properties.INDEX: "watches"
-    },
+# All Supported Websites based on category
+SUPPORTED_WEBSITES = {
+    "fashion": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+        Websites.MYNTRA,
+    ],
+    "kitchenware": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+    ],
+    "home-textiles": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+    ],
+    "cleaning-supplies": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+    ],
+    "personal-care": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+    ],
+    "food-grocery": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+        Websites.MYNTRA
+    ],
+    "gadgets": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+        Websites.MYNTRA
+    ],
+    "home-appliances": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+        Websites.MYNTRA
+    ],
+    "small-kitchen-appliances": [
+        Websites.AMAZON,
+        Websites.FLIPKART,
+        Websites.MYNTRA
+    ]
 }
 
-FASHION_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
 
-KITCHENWARE_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-HOME_TEXTILES_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-CLEANING_SUPPLIES_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-PERSONAL_CARE_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-FOOD_GROCERY_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-GADGETS_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-HOME_APPLIANCES_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-SMALL_KITCHEN_APPLIANCES_WEBSITES: List[Websites] = [
-    Websites.AMAZON,
-    Websites.FLIPKART,
-    Websites.MYNTRA,
-]
-
-
-PRODUCT_URL_DETAILS: PRODUCT_URL_DETAILS_TYPE = {
+PRODUCT_URL_DETAILS: Dict[ProductCategories, ProductUrlDetailsValue] = {
+    # FASHION - SECTION
     ProductCategories.JEANS: {
-        "website": FASHION_WEBSITES
+        "max_price": 2500,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.TSHIRT: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.SHIRT: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.CARGO: {
-        "website": FASHION_WEBSITES
-    },
-    ProductCategories.FOOTWEAR: {
-        "website": FASHION_WEBSITES
+        "max_price": 1800,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.JACKET: {
-        "website": FASHION_WEBSITES
+        "max_price": 2000,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.SWEATSHIRTS: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.TRACKPANT: {
-        "website": FASHION_WEBSITES
+        "max_price": 2000,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.TROUSER: {
-        "website": FASHION_WEBSITES
+        "max_price": 2000,
+        "amazon_url_props": {
+            "category_id": "1968024031",
+            "index": "fashion"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.WATCHES: {
-        "website": FASHION_WEBSITES
+        "max_price": 2000,
+        "amazon_url_props": {
+            "category_id": "2563504031",
+            "index": "watches"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
+    },
+    ProductCategories.FOOTWEAR: {
+        "max_price": 2000,
+        "amazon_url_props": {
+            "category_id": "1983518031",
+            "index": "shoes"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
     ProductCategories.SHOES: {
-        "website": FASHION_WEBSITES
+        "max_price": 2000,
+        "amazon_url_props": {
+            "category_id": "1983518031",
+            "index": "shoes"
+        },
+        "website": SUPPORTED_WEBSITES["fashion"]
     },
+
+    # KITCHENWARE - SECTION
     ProductCategories.KITCHENWARE: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "",
+            "index": ""
+        },
+        "website": SUPPORTED_WEBSITES["kitchenware"]
     },
+
+    # HOME_TEXTILES - SECTION
     ProductCategories.HOME_TEXTILES: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "",
+            "index": ""
+        },
+        "website": SUPPORTED_WEBSITES["home-textiles"]
     },
+
+    # CLEANING_SUPPLIES - SECTION
     ProductCategories.CLEANING_SUPPLIES: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "",
+            "index": ""
+        },
+        "website": SUPPORTED_WEBSITES["cleaning-supplies"]
     },
+
+    # FOOD_GROCERY - SECTION
     ProductCategories.FOOD_GROCERY: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "",
+            "index": ""
+        },
+        "website": SUPPORTED_WEBSITES["food-grocery"]
     },
+
+    # HOME_APPLIANCES - SECTION
     ProductCategories.HOME_APPLIANCES: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "",
+            "index": ""
+        },
+        "website": SUPPORTED_WEBSITES["home-appliances"]
     },
+
+    # SMALL_KITCHEN_APPLIANCES - SECTION
     ProductCategories.SMALL_KITCHEN_APPLIANCES: {
-        "website": FASHION_WEBSITES
+        "max_price": 1500,
+        "amazon_url_props": {
+            "category_id": "",
+            "index": ""
+        },
+        "website": SUPPORTED_WEBSITES["small-kitchen-appliances"]
     },
 }

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from logging import error
 from typing import Dict, List
 from selenium.common.exceptions import WebDriverException, TimeoutException
@@ -6,13 +7,12 @@ from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
 
 from .best_discount_analyzer import BestDiscountAnalyzer
 
-from ..constants.product import PRICE_LIMITS
-from ..constants.url import AMAZON_URL_PROPERTIES, BASE_URLS
+from ..constants.url import BASE_URLS, PRODUCT_URL_DETAILS
 
 
 from ..db.redis import RedisDB
 from ..helpers import SeleniumHelper
-from ..lib.types import Product, Properties, Websites, ProductCategories
+from ..lib.types import Product, Websites, ProductCategories
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 
 MAX_PRODUCT_TO_SEND = 15
@@ -94,31 +94,35 @@ class Utils:
         return:
             Dict[ProductCategories, Dict[Websites, str]] - The generated URLs.
         """
-        urls: Dict[ProductCategories, Dict[Websites, str]] = {}
-        for category in categories:
-            urls[category] = {}
-            query = category.value
+        urls: Dict[ProductCategories, Dict[Websites, str]] = defaultdict(dict)
 
-            for website in Websites:
-                base_url = BASE_URLS[website]
-                price_limit = PRICE_LIMITS[category]
+        for category in categories:
+            supported_websites = PRODUCT_URL_DETAILS[category]["website"]
+            price_limit = PRODUCT_URL_DETAILS[category]["max_price"]
+
+            category_value = category.value
+            for website in supported_websites:
+                base_url = BASE_URLS.get(website)
+
+                if base_url is None:
+                    continue
 
                 if website == Websites.AMAZON:
                     urls[category][website] = base_url.format(
-                        query=query,
-                        index=AMAZON_URL_PROPERTIES[category][Properties.INDEX],
-                        category_id=AMAZON_URL_PROPERTIES[category][Properties.CATEGORY_ID],
+                        query=category_value,
+                        index=PRODUCT_URL_DETAILS[category].get(
+                            "amazon_url_props", {}).get("index"),
+                        category_id=PRODUCT_URL_DETAILS[category].get(
+                            "amazon_url_props", {}).get("category_id"),
                         max_price=price_limit
                     )
                 else:
                     urls[category][website] = base_url.format(
-                        query=query,
-                        index=AMAZON_URL_PROPERTIES[category][Properties.INDEX],
-                        category_id=AMAZON_URL_PROPERTIES[category][Properties.CATEGORY_ID],
+                        query=category_value,
                         max_price=price_limit
                     )
 
-        return urls
+        return dict(urls)
 
     @staticmethod
     def sort_products(products: List[Product]) -> List[Product]:

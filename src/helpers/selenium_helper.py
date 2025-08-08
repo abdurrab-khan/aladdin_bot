@@ -16,13 +16,12 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 
 from ..constants.const import ASSOCIATED_APP, USER_ID
-from ..constants.url import PLATFORM_IDS
+from ..constants.url import MAX_PRODUCTS_PER_WEBSITE, PLATFORM_IDS
 
 from ..db.redis import RedisDB
 from .helper_functions import HelperFunctions, retry
 from ..lib.types import Websites, ProductCategories, ProductKey, Product
 from ..constants.css_selectors import NEXT_BUTTON, PRODUCT_CONTAINER, PRODUCT_DETAILS, PRODUCT_CARDS
-from ..constants.product import PRICE_LIMITS, MAX_PRODUCTS_PER_WEBSITE
 
 
 class WebDriverUtility:
@@ -198,7 +197,7 @@ class DataProcessingHelper:
         return element
 
     @staticmethod
-    def is_product_valid(url: str | None, discount_price: float | None, price_limit: int, rating_count: int | None, redis: RedisDB) -> bool:
+    def is_product_valid(url: str | None, discount_price: float | None, rating_count: int | None, redis: RedisDB, category: ProductCategories, website: Websites) -> bool:
         """
         Validate if a product has the necessary information.
 
@@ -312,6 +311,7 @@ class WebsiteScraper:
             driver_utility (WebDriverUtility): The WebDriver utility instance.
             redis_client (RedisDB): The Redis client instance.
         """
+
         self.processed_product_urls = set()
         self.category = category
         self.driver_utility = driver_utility
@@ -381,9 +381,14 @@ class WebsiteScraper:
             # Checking -- Whether product is valid or not
             # >> Check Whether product is recently sended.
             # >> Product price is more that max price.
-            # >> Discount price is more that max discount price.
             # >> Review count should be greater than 10.
-            if not DataProcessingHelper.is_product_valid(product_details.get("product_url"), product_details.get("price"), PRICE_LIMITS[self.category], product_details.get("rating_count"), self.redis_client):
+            if not DataProcessingHelper.is_product_valid(
+                product_details.get("product_url"),
+                product_details.get("price"),
+                product_details.get("rating_count"),
+                self.redis_client, self.category,
+                website_name
+            ):
                 continue
 
             # Check -- Whether product is valid or not
@@ -560,8 +565,12 @@ class FlipkartScraper(WebsiteScraper):
             formatted_url = DataProcessingHelper.format_extracted_data(
                 "product_url", url, Websites.FLIPKART)
 
+            # Ensure price is of correct type (float | None)
+            actual_price = price if isinstance(
+                price, (float, int, type(None))) else None
+
             # Checking --- Whether Product is Valid or None
-            if not DataProcessingHelper.is_product_valid(str(formatted_url), price, PRICE_LIMITS[self.category], None, self.redis_client):
+            if not DataProcessingHelper.is_product_valid(str(formatted_url), actual_price, None, self.redis_client, self.category, Websites.FLIPKART):
                 continue
 
             # Check --- Whether give product is already there
