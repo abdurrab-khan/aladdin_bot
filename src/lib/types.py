@@ -49,9 +49,13 @@ class ProductCategories(Enum):
     KITCHENWARE = "kitchenware"
     HOME_TEXTILES = "home-textiles"
     CLEANING_SUPPLIES = "cleaning-supplies"
+    HOUSEHOLD = "household"
     FOOD_GROCERY = "food&grocery"
     HOME_APPLIANCES = "home-appliances"
     SMALL_KITCHEN_APPLIANCES = "small-kitchen-appliances"
+    GADGETS = "gadgets"
+    MOBILE_ACCESSORIES = "mobile-accessories"
+    COMPUTER_ACCESSORIES = "computer-accessories"
 
 
 class Properties(Enum):
