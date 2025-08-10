@@ -1,7 +1,10 @@
 from asyncio import run
+from os import getenv
 from typing import List
 from dotenv import load_dotenv
 from logging import warning, basicConfig, INFO
+
+from .constants.const import ASSOCIATED_APP
 
 from .db.supabase import SupaBaseClient
 from .db.redis import RedisDB

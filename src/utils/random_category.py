@@ -8,7 +8,7 @@ from ..db.redis import RedisDB
 from ..lib.types import ProductCategories
 from ..constants.redis_key import PRODUCT_CATEGORY_CACHE_KEY
 
-NUMBER_OF_CATEGORIES_AT_TIME = 3
+NUMBER_OF_CATEGORIES_AT_TIME = 5
 
 
 def get_unique_random_category(client: RedisDB) -> List[ProductCategories]:
@@ -62,15 +62,18 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     utc_now = datetime.now(dt.utc)
     ist_now = utc_now.astimezone(timezone("Asia/Kolkata"))
     hour = ist_now.hour
-    hour = 6
+    random_categories = get_unique_random_category(redis)
 
-    if hour >= 6 and hour <= 8:
-        info("🌄 Running morning products (6 AM):")
-    elif hour >= 22 and hour <= 23:
-        info("🌙 Running night product (10 PM):")
-    else:
-        info(
-            f"⏳ Current time is not 6 AM or 10 PM. No products to run. Current time: {hour}")
-        exit(0)
+    # Print the
+    if hour >= 6 and hour <= 12:
+        info(f"🌄 Running morning products ${hour}")
+    elif hour >= 18 and hour <= 20:
+        info(f"🌇 Running evening products ${hour}")
+    elif hour >= 0 and hour <= 2:
+        info("🌙 Running midnight products (12 AM):")
 
-    return get_unique_random_category(redis)
+    if len(random_categories) == 0:
+        info("😓 No categories found, using default categories.")
+        exit(1)
+
+    return random_categories

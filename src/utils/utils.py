@@ -3,19 +3,43 @@ from logging import error
 from typing import Dict, List
 from selenium.common.exceptions import WebDriverException, TimeoutException
 
+from ..crawler.main import SeleniumHelper
 from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
-
 from .best_discount_analyzer import BestDiscountAnalyzer
-
 from ..constants.url import BASE_URLS, PRODUCT_URL_DETAILS
+from ..constants.const import FLIPKART_QUERY_WITH_CAT, FLIPKART_QUERY_WITHOUT_CAT
 
 
 from ..db.redis import RedisDB
-from ..helpers import SeleniumHelper
 from ..lib.types import Product, Websites, ProductCategories
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 
 MAX_PRODUCT_TO_SEND = 15
+
+# <================> HELPER FUNCTIONS <================>
+
+
+def getAmazonUrl(query: str, min_price: int, max_price: int, category_id: str, index: str) -> str:
+    base_url = BASE_URLS[Websites.AMAZON]
+
+    return base_url.format(
+        query=query,
+        index=index,
+        category_id=category_id,
+        min_price=min_price,
+        max_price=max_price
+    )
+
+
+def getFlipkartUrl(query: str, min_price: int, max_price: int, category: str) -> str:
+    base_url = BASE_URLS[Websites.FLIPKART]
+
+    return base_url.format(
+        category=category,
+        query=query,
+        min_price=min_price,
+        max_price=max_price
+    )
 
 
 class Utils:
@@ -98,29 +122,40 @@ class Utils:
 
         for category in categories:
             supported_websites = PRODUCT_URL_DETAILS[category]["website"]
-            price_limit = PRODUCT_URL_DETAILS[category]["max_price"]
-
+            min_price = PRODUCT_URL_DETAILS[category]["min_price"]
+            max_price = PRODUCT_URL_DETAILS[category]["max_price"]
             category_value = category.value
+
             for website in supported_websites:
-                base_url = BASE_URLS.get(website)
+                url = ""
 
-                if base_url is None:
-                    continue
-
+                # Based on website generating urls
                 if website == Websites.AMAZON:
-                    urls[category][website] = base_url.format(
+                    url_props = PRODUCT_URL_DETAILS[category].get(
+                        "amazon_url_props", {})
+
+                    category_id = url_props.get("category_id", "")
+                    index = url_props.get("index", "")
+
+                    url = getAmazonUrl(
+                        category_value, min_price, max_price, category_id, index)
+                elif website == Websites.FLIPKART:
+                    url_props = PRODUCT_URL_DETAILS[category].get(
+                        "flipkart_url_props", {})
+
+                    category_props = url_props.get("category", "")
+                    query_base = FLIPKART_QUERY_WITH_CAT if category_props else FLIPKART_QUERY_WITHOUT_CAT
+                    query = query_base.format(query=category_value)
+
+                    url = getFlipkartUrl(
+                        query, min_price, max_price, category_props)
+                elif website == Websites.MYNTRA:
+                    url = BASE_URLS[Websites.MYNTRA].format(
                         query=category_value,
-                        index=PRODUCT_URL_DETAILS[category].get(
-                            "amazon_url_props", {}).get("index"),
-                        category_id=PRODUCT_URL_DETAILS[category].get(
-                            "amazon_url_props", {}).get("category_id"),
-                        max_price=price_limit
+                        max_price=max_price
                     )
-                else:
-                    urls[category][website] = base_url.format(
-                        query=category_value,
-                        max_price=price_limit
-                    )
+
+                urls[category][website] = urls[category][website] = url
 
         return dict(urls)
 

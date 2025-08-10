@@ -45,12 +45,10 @@ class ProductCategories(Enum):
     TRACKPANT = "track-pant"
     TROUSER = "trouser"
     WATCHES = "watches"
-    SHOES = "shoes"
     KITCHENWARE = "kitchenware"
-    HOME_TEXTILES = "home-textiles"
     CLEANING_SUPPLIES = "cleaning-supplies"
     HOUSEHOLD = "household"
-    FOOD_GROCERY = "food&grocery"
+    FOOD_GROCERY = "food-grocery"
     HOME_APPLIANCES = "home-appliances"
     SMALL_KITCHEN_APPLIANCES = "small-kitchen-appliances"
     GADGETS = "gadgets"
@@ -63,12 +61,18 @@ class Properties(Enum):
     INDEX = "index"
 
 
-class UrlPropsType(TypedDict):
+class AmazonUrlProps(TypedDict):
     category_id: str
     index: str
 
 
+class FlipkartUrlProps(TypedDict):
+    category: str
+
+
 class ProductUrlDetailsValue(TypedDict):
+    min_price: int
     max_price: int
     website: List[Websites]
-    amazon_url_props: NotRequired[UrlPropsType]
+    amazon_url_props: NotRequired[AmazonUrlProps]
+    flipkart_url_props: NotRequired[FlipkartUrlProps]
