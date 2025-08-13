@@ -4,7 +4,7 @@ from typing import List
 from random import uniform
 from selenium.webdriver.common.by import By
 
-from ...constants.css_selectors import NEXT_BUTTON, PRODUCT_CARDS
+from ..utils.css_selector.css_selector import NEXT_BUTTON, PRODUCT_CARDS
 from ...lib.types import Product, Websites
 
 from ..utils.crawler_utils import WebsiteScraper

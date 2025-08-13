@@ -1,5 +1,5 @@
 from typing import Dict, List
-from ..lib.types import Websites, ProductKey
+from ....lib.types import Websites, ProductKey
 
 
 # CSS Selectors for each website to extract product details.

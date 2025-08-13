@@ -5,7 +5,7 @@ from bs4 import Tag
 
 from ...db.redis import RedisDB
 from ...constants.const import ASSOCIATED_APP, USER_ID
-from ...constants.css_selectors import PRODUCT_DETAILS
+from ..utils.css_selector.css_selector import PRODUCT_DETAILS
 from ...constants.url import PLATFORM_IDS, PRODUCT_URL_DETAILS
 
 from ...helpers.helper_functions import HelperFunctions

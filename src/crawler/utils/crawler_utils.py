@@ -10,7 +10,7 @@ from ..utils.data_processor import DataProcessingHelper
 from ..utils.web_driver_utility import WebDriverUtility
 from ...lib.types import Product, ProductCategories, Websites
 from ...utils.best_discount_analyzer import BestDiscountAnalyzer
-from ...constants.css_selectors import NEXT_BUTTON, PRODUCT_CARDS, PRODUCT_CONTAINER
+from ..utils.css_selector.css_selector import NEXT_BUTTON, PRODUCT_CARDS, PRODUCT_CONTAINER
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait

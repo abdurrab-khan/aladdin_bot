@@ -10,7 +10,7 @@ from selenium.common.exceptions import NoSuchElementException
 from ...lib.types import Product, Websites
 from ..utils.crawler_utils import WebsiteScraper
 from ..utils.data_processor import DataProcessingHelper
-from ...constants.css_selectors import NEXT_BUTTON, PRODUCT_CARDS, PRODUCT_DETAILS
+from ..utils.css_selector.css_selector import NEXT_BUTTON, PRODUCT_CARDS, PRODUCT_DETAILS
 
 
 class FlipkartScraper(WebsiteScraper):

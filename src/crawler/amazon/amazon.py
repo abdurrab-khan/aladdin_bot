@@ -5,7 +5,7 @@ from bs4 import Tag
 
 from ...db.supabase import retry
 
-from ...constants.css_selectors import NEXT_BUTTON
+from ..utils.css_selector.css_selector import NEXT_BUTTON
 from ...lib.types import Product, Websites
 from ..utils.crawler_utils import WebsiteScraper
 
