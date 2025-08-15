@@ -64,11 +64,10 @@ def get_daily_category(redis: RedisDB) -> List[ProductCategories]:
     hour = ist_now.hour
     random_categories = get_unique_random_category(redis)
 
-    # Print the
     if hour >= 6 and hour <= 12:
-        info(f"🌄 Running morning products ${hour}")
+        info(f"🌄 Running morning products {hour}")
     elif hour >= 18 and hour <= 20:
-        info(f"🌇 Running evening products ${hour}")
+        info(f"🌇 Running evening products {hour}")
     elif hour >= 0 and hour <= 2:
         info("🌙 Running midnight products (12 AM):")
 

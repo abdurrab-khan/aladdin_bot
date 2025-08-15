@@ -1,14 +1,18 @@
+from logging import error
 from re import search
-from typing import Optional
+from typing import Optional, cast
 from urllib.parse import unquote
-from bs4 import Tag
 
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
 from ...db.redis import RedisDB
 from ...constants.const import ASSOCIATED_APP, USER_ID
 from ..utils.css_selector.css_selector import PRODUCT_DETAILS
 from ...constants.url import PLATFORM_IDS, PRODUCT_URL_DETAILS
 
+from selenium.webdriver.remote.webelement import WebElement
 from ...helpers.helper_functions import HelperFunctions
+from selenium.common.exceptions import NoSuchElementException
 from ...lib.types import Product, ProductCategories, ProductKey, Websites
 
 
@@ -28,7 +32,7 @@ class DataProcessingHelper:
     """
 
     @staticmethod
-    def get_product_details(soup: Tag, website_name: Websites, category: ProductCategories) -> Optional[Product]:
+    def get_product_details(card: WebElement, website_name: Websites, category: ProductCategories) -> Optional[Product]:
         """
         Extract product details from the BeautifulSoup object.
 
@@ -44,7 +48,8 @@ class DataProcessingHelper:
 
         for key, selectors in PRODUCT_DETAILS[website_name].items():
             try:
-                element = soup.select_one(", ".join(selectors))
+                element = DataProcessingHelper.extract_product_detail(
+                    card, ", ".join(selectors))
                 formatted_data = DataProcessingHelper.format_extracted_data(
                     key, element, website_name)
 
@@ -52,8 +57,8 @@ class DataProcessingHelper:
                     return None
 
                 if key == "product_image":
-                    image_url = increaseImageQuality(
-                        formatted_data, website_name)
+                    url = cast(str, formatted_data)
+                    image_url = increaseImageQuality(url, website_name)
                     formatted_data = image_url
 
                 product_details[key] = formatted_data
@@ -70,7 +75,7 @@ class DataProcessingHelper:
         return product_details
 
     @staticmethod
-    def format_extracted_data(key: ProductKey, element_data: Tag | None, website_name: Websites):
+    def format_extracted_data(key: ProductKey, element_data: WebElement | None, website_name: Websites):
         """
         Format the extracted data based on the selector type.
 
@@ -84,16 +89,24 @@ class DataProcessingHelper:
         if element_data is None:
             return None
 
+        element = None
         if key == "product_image" or key == "product_url":
             attr = "href" if key == "product_url" else "src"
-            element = element_data[attr]
+            element = element_data.get_attribute(attr)
 
             if element is None:
                 return None
 
             return element if key == "product_image" else DataProcessingHelper.url_shorter(str(element), website_name)
         else:
-            element = element_data.get_text(strip=True)
+            elem = element_data.get_attribute("innerHTML")
+
+            if elem is not None:
+                soup = BeautifulSoup(elem, "html.parser")
+                element = soup.text
+
+        if element is None:
+            return None
 
         # Format the give data by website_name
         if key == "price" or key == "discount_price":
@@ -108,7 +121,7 @@ class DataProcessingHelper:
         return element
 
     @staticmethod
-    def is_product_valid(url: str | None, discount_price: float | None, rating_count: int | None, redis: RedisDB, category: ProductCategories) -> bool:
+    def is_product_valid(url: str | None, original_price: str | int | float | None, redis: RedisDB, category: ProductCategories) -> bool:
         """
         Validate if a product has the necessary information.
 
@@ -119,15 +132,15 @@ class DataProcessingHelper:
         Returns:
             bool: True if the product is valid, False otherwise.
         """
-        if url is None or discount_price is None:
+        if url is None or original_price is None:
             return False
 
-        if rating_count is not None and rating_count >= 10:
+        if not isinstance(original_price, (float, int)):
             return False
 
         price_limit = PRODUCT_URL_DETAILS[category]["max_price"]
 
-        if discount_price < price_limit:
+        if original_price < price_limit:
             if redis.is_url_cached(url):
                 return False
             else:
@@ -179,4 +192,15 @@ class DataProcessingHelper:
         if match:
             return match.group(1)
         else:
+            return None
+
+    @staticmethod
+    def extract_product_detail(card: WebElement, selector: str):
+        try:
+            element = card.find_element(By.CSS_SELECTOR, selector)
+
+            if element is not None:
+                return element
+
+        except Exception:
             return None

@@ -3,7 +3,7 @@ from logging import error
 from typing import Dict, List
 from selenium.common.exceptions import WebDriverException, TimeoutException
 
-from ..crawler.main import SeleniumHelper
+from ..crawler.crawler import Crawler
 from ..constants.redis_key import PRODUCT_URL_CACHE_KEY
 from .best_discount_analyzer import BestDiscountAnalyzer
 from ..constants.url import BASE_URLS, PRODUCT_URL_DETAILS
@@ -56,7 +56,7 @@ class Utils:
             Dict[ProductCategories, List[Product]] - The fetched products.
         """
         discount_analyzer = BestDiscountAnalyzer()
-        selenium_helper = SeleniumHelper(redis, discount_analyzer)
+        selenium_helper = Crawler(redis, discount_analyzer)
 
         products_by_cat: List[Product] = []
         all_products: List[Product] = []

@@ -3,15 +3,18 @@ from time import sleep
 from typing import List
 from logging import error, warning
 
+from .utils.css_selector.css_selector import NEXT_BUTTON
+
 from ..db.redis import RedisDB
 from ..constants.url import MAX_PRODUCTS_PER_WEBSITE
 from .utils.web_driver_utility import WebDriverUtility
+from selenium.webdriver.common.by import By
 from ..lib.types import Product, ProductCategories, Websites
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 from .utils.website_crawler_factory import WebsiteScraperFactory
 
 
-class SeleniumHelper:
+class Crawler:
     """
     Main class to coordinate the scraping operations across different websites.
     """
@@ -55,7 +58,6 @@ class SeleniumHelper:
                     return all_products if all_products else None
 
                 page_products = scraper.extract_products(container)
-
                 #  Check if we have less than 15 products and page_counter is greater than 20
                 # This is to prevent scraping too many pages if not enough products are found
                 if len(all_products) < 15 and page_counter >= 20:
@@ -104,3 +106,15 @@ class SeleniumHelper:
         Clean up resources.
         """
         self.driver_utility.close_driver()
+
+
+if __name__ == "__main__":
+    with RedisDB() as redis_db:
+        analyzer = BestDiscountAnalyzer()
+        crawler = Crawler(redis_db, analyzer)
+
+        fetched_product = crawler.get_product(
+            Websites.FLIPKART,
+            ProductCategories.JEANS,
+            "https://www.flipkart.com/search?q=jeans&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off",
+        )

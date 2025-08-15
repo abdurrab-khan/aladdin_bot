@@ -28,10 +28,10 @@ class WebsiteScraperFactory:
         """
 
         if website == Websites.AMAZON:
-            return AmazonScraper(category, driver_utility, redis_client, discount_analyzer)
+            return AmazonScraper(category, driver_utility, redis_client, discount_analyzer, Websites.AMAZON)
         elif website == Websites.FLIPKART:
-            return FlipkartScraper(category, driver_utility, redis_client, discount_analyzer)
+            return FlipkartScraper(category, driver_utility, redis_client, discount_analyzer, Websites.FLIPKART)
         elif website == Websites.MYNTRA:
-            return MyntraScraper(category, driver_utility, redis_client, discount_analyzer)
+            return MyntraScraper(category, driver_utility, redis_client, discount_analyzer, Websites.MYNTRA)
         else:
             raise ValueError(f"Unsupported website: {website}")

@@ -1,5 +1,5 @@
 from time import sleep
-from typing import List, Optional
+from typing import List
 from logging import error, warning
 from random import choice, uniform
 from selenium.webdriver import Chrome
@@ -8,6 +8,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.common.exceptions import NoSuchElementException
 
 
 class WebDriverUtility:
@@ -25,7 +27,7 @@ class WebDriverUtility:
         """Set up the Chrome WebDriver with appropriate options"""
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument(
@@ -49,31 +51,72 @@ class WebDriverUtility:
             self.driver.get(url)
             sleep(uniform(1, 3.5))
 
-    def safe_find_element(self, selectors: List[str] | str, timeout: int = 5) -> Optional[List[WebElement]]:
+    def find_element_with_wait(self, selectors: List[str], timeout: int = 5) -> WebElement | None:
         """
-        Safely find an element using a selector.
+        Find an element using CSS selectors with timeout wait.
 
         Args:
-            selector (str): The CSS selector to find the element.
+            selectors (List[str]): List of CSS selectors to find the element.
+            type (Literal["single", "multiple"]): Whether to find single or multiple elements.
             timeout (int): The maximum time to wait in seconds.
 
         Returns:
-            WebElement | None: The found element or None if not found.
+            WebElement | List[WebElement] | None: The found element(s) or None if not found.
         """
         def any_element_present(driver):
-            list_selectors = selectors if isinstance(
-                selectors, list) else [selectors]
+            all_selectors = ", ".join(selectors)
+            element = None
 
-            for selector in list_selectors:
-                element = driver.find_elements(
-                    By.CSS_SELECTOR, selector)
+            try:
+                element = driver.find_element(
+                    By.CSS_SELECTOR, all_selectors)
 
-                if element:
-                    return element
-
+                return element if element is not None else None
+            except Exception:
                 return None
 
         return self._webdriver_wait(any_element_present, timeout)
+
+    def find_element_from_parent(self, parent: WebElement | WebDriver, selectors: List[str]) -> WebElement | None:
+        """
+        Find an element directly from a parent element without wait.
+
+        Args:
+            parent (WebElement): The parent element to search within.
+            selectors (List[str]): List of CSS selectors to find the element.
+            type (Literal["single", "multiple"]): Whether to find single or multiple elements.
+
+        Returns:
+            WebElement | List[WebElement] | None: The found element(s) or None if not found.
+        """
+        all_selectors = ", ".join(selectors)
+
+        try:
+            elem = parent.find_element(By.CSS_SELECTOR, all_selectors)
+
+            if elem is not None:
+                return elem
+        except Exception:
+            return None
+
+    def find_elements_from_parent(self, parent: WebElement | WebDriver, selectors: List[str]) -> List[WebElement] | None:
+        """
+        Find an elements directly from a parent element without wait.
+
+        Args:
+            parent (WebElement): The parent element to search within.
+            selectors (List[str]): List of CSS selectors to find the element.
+            type (Literal["single", "multiple"]): Whether to find single or multiple elements.
+
+        Returns:
+            WebElement | List[WebElement] | None: The found element(s) or None if not found.
+        """
+        all_selectors = ", ".join(selectors)
+
+        try:
+            return parent.find_elements(By.CSS_SELECTOR, all_selectors)
+        except Exception:
+            return None
 
     def _webdriver_wait(self, callback, timeout: int = 10):
         """
@@ -86,6 +129,9 @@ class WebDriverUtility:
         Returns:
             any: The result of the callback function if successful, None otherwise.
         """
+        if self.driver is None:
+            return
+
         try:
             return WebDriverWait(self.driver, timeout).until(callback)
         except TimeoutException:

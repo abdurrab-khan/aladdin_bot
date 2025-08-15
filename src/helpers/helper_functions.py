@@ -1,3 +1,4 @@
+from random import weibullvariate
 from time import sleep
 from logging import warning
 
@@ -71,10 +72,11 @@ class HelperFunctions:
         if website_name == Websites.AMAZON:
             return float(rating.split(" ")[0])
 
-        elif website_name == Websites.FLIPKART or website_name == Websites.MYNTRA:
+        elif website_name == Websites.MYNTRA:
             return float(rating)
 
-        return float(rating)
+        elif website_name == Websites.FLIPKART:
+            return float(rating.split()[0])
 
     @staticmethod
     def format_rating_count(rating_count: str, website_name: Websites) -> int:
@@ -82,7 +84,7 @@ class HelperFunctions:
             return int(rating_count.replace(",", "").replace(".", ""))
 
         elif website_name == Websites.FLIPKART:
-            return int(rating_count.split(" ")[0].replace(",", "").replace(".", ""))
+            return int(rating_count.split(" ")[0].replace(",", "").replace(".", "").replace("(", "").replace(")", ""))
 
         elif website_name == Websites.MYNTRA:
             return convert_to_number(rating_count)

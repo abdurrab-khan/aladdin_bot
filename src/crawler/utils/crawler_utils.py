@@ -1,9 +1,8 @@
 
 from time import sleep
-from typing import List
+from typing import List, cast
 from random import uniform
 from logging import error, info
-from bs4 import BeautifulSoup, Tag
 
 from ...db.redis import RedisDB
 from ..utils.data_processor import DataProcessingHelper
@@ -14,6 +13,7 @@ from ..utils.css_selector.css_selector import NEXT_BUTTON, PRODUCT_CARDS, PRODUC
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -23,7 +23,7 @@ class WebsiteScraper:
     Base class for website-specific scrapers.
     """
 
-    def __init__(self, category: ProductCategories, driver_utility: WebDriverUtility, redis_client: RedisDB, discount_analyzer: BestDiscountAnalyzer):
+    def __init__(self, category: ProductCategories, driver_utility: WebDriverUtility, redis_client: RedisDB, discount_analyzer: BestDiscountAnalyzer, website_name: Websites):
         """
         Initialize the website scraper.
 
@@ -38,8 +38,9 @@ class WebsiteScraper:
         self.redis_client = redis_client
         self.discount_analyzer = discount_analyzer
         self.data_helper = DataProcessingHelper()
+        self.website_name: Websites = website_name
 
-    def get_product_container(self, website_name: Websites, url: str | None = None) -> Tag | None:
+    def get_product_container(self, url: str | None) -> WebElement | None:
         """
         Get the main container element containing product cards.
 
@@ -49,25 +50,20 @@ class WebsiteScraper:
         Returns:
             BeautifulSoup: The main container element.
         """
+        website = self.website_name
+
+        # Navigate to that url
         if url:
             self.driver_utility.navigate_to(url)
 
-        isLoaded = self._wait_for_page_load(website_name)
+        # Checking whether website is loaded or not
+        isLoaded = self._wait_for_page_load()
         if not isLoaded:
-            error(f"⌛ Timeout waiting for {website_name.value} page to load")
+            error(f"⌛ Timeout waiting for {website.value} page to load")
             return None
 
-        if self.driver_utility.driver is None:
-            error("⛔ WebDriver is not initialized.")
-            return None
-
-        html = self.driver_utility.driver.page_source
-        if html is None:
-            error("⛔ Failed to retrieve HTML page content.")
-            return None
-
-        soup = BeautifulSoup(html, 'html.parser')
-        main_container = soup.select_one(PRODUCT_CONTAINER[website_name])
+        main_container = self.driver_utility.find_element_with_wait(
+            PRODUCT_CONTAINER[website])
 
         if main_container is None:
             error("⛔ Failed to find the main container for Amazon products.")
@@ -75,7 +71,7 @@ class WebsiteScraper:
 
         return main_container
 
-    def extract_products(self, container: Tag, website_name: Websites) -> List[Product] | None:
+    def extract_products(self, container: WebElement) -> List[Product] | None:
         """
         Extract products from the container.
 
@@ -85,62 +81,53 @@ class WebsiteScraper:
         Returns:
             List[Product]: List of extracted products.
         """
+        if self.website_name is None:
+            return []
+
+        driver_utility = self.driver_utility
+
         products: List[Product] = []
-        products_soup = container.select(PRODUCT_CARDS[website_name])
+        product_cards = driver_utility.find_elements_from_parent(
+            container, PRODUCT_CARDS[self.website_name])
 
-        if not products_soup:
-            return None
+        if product_cards is None or len(product_cards) == 0:
+            return []
 
-        for soup in products_soup:
-            product_details: Product | None = DataProcessingHelper.get_product_details(
-                soup, website_name, self.category)
+        for card in product_cards:
+            product_details = self.extract_product_details(card)
 
             if product_details is None:
                 continue
 
-            # Checking -- Whether product is valid or not
-            # >> Check Whether product is recently sended.
-            # >> Product price is more that max price.
-            # >> Review count should be greater than 10.
-            if not DataProcessingHelper.is_product_valid(
-                product_details.get("product_url"),
-                product_details.get("price"),
-                product_details.get("rating_count"),
-                self.redis_client, self.category,
-            ):
-                continue
-
-            # Check -- Whether product is valid or not
-            # >> Check by using some ml algorithms.
-            # >> Check whether already fetched or not.
-            if not (self.discount_analyzer.is_best_discount(product_details)) or self.processed_product_urls.__contains__(product_details["product_url"]):
-                continue
-
             products.append(product_details)
-            self.processed_product_urls.add(product_details["product_url"])
-
-            info(
-                f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details['rating']} | {website_name.value}")
 
         return products
 
-    def has_next_page(self, website_name: Websites) -> bool:
+    def has_next_page(self) -> bool:
         """
         Check if there is a next page available.
 
         Returns:
             bool: True if there is a next page, False otherwise.
         """
+        website = self.website_name
+        driver = self.driver_utility.driver
+
+        if driver is None:
+            return False
+
         try:
-            next_page_btn = self.driver_utility.safe_find_element(
-                NEXT_BUTTON[website_name])
+            next_page_btn = self.driver_utility.find_elements_from_parent(
+                driver, NEXT_BUTTON[website])
 
             if next_page_btn is None:
                 return False
 
             next_page_btn = next_page_btn[0]
 
-            return next_page_btn.is_enabled() and next_page_btn.is_displayed() or next_page_btn.get_attribute("aria_disabled") == "false"
+            isBtnWorkable = next_page_btn.is_enabled() and next_page_btn.is_displayed(
+            ) or next_page_btn.get_attribute("aria_disabled") == "false"
+            return isBtnWorkable
         except NoSuchElementException:
             return False
 
@@ -150,27 +137,57 @@ class WebsiteScraper:
         """
         raise NotImplementedError("Subclasses must implement this method")
 
-    def _wait_for_page_load(self, website_name: Websites) -> bool:
+    def extract_product_details(self, card: WebElement) -> Product | None:
+        product_details = DataProcessingHelper.get_product_details(
+            card, self.website_name, self.category)
+
+        # Simple -- Return is "product_details" are None
+        if product_details is None:
+            return None
+
+        # Extract some details
+        url, price = (product_details.get(
+            k, None) for k in ("product_url", "price"))
+
+        # Checking -- Whether product is valid or not.
+        isProductValid = DataProcessingHelper.is_product_valid(
+            url, price, self.redis_client, self.category) and self.discount_analyzer.is_best_discount(product_details) and (not self.processed_product_urls.__contains__(url))
+
+        if not isProductValid:
+            return None
+
+        info(
+            f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details['rating']} | {self.website_name.value}")
+        self.processed_product_urls.add(url)
+
+        return product_details
+
+    def _wait_for_page_load(self) -> bool:
         """
         Wait for the page to load completely.
         """
+        driver = self.driver_utility.driver
+
+        if driver is None:
+            return False
+
         attempt = 0
         max_retry = 2
         while attempt < max_retry:
             try:
-                WebDriverWait(self.driver_utility.driver, 8).until(
+                WebDriverWait(driver, 8).until(
                     EC.presence_of_all_elements_located(
-                        (By.CSS_SELECTOR, PRODUCT_CONTAINER[website_name]))
+                        (By.CSS_SELECTOR, ", ".join(PRODUCT_CONTAINER[self.website_name])))
                 )
                 sleep(uniform(1.5, 3))
 
                 return True
             except TimeoutException:
                 attempt += 1
-                base_url_before_ref = self.driver_utility.driver.current_url
-                self.driver_utility.driver.refresh()
+                base_url_before_ref = driver.current_url
+                driver.refresh()
 
-                if base_url_before_ref != self.driver_utility.driver.current_url:
+                if base_url_before_ref != driver.current_url:
                     return False
 
                 sleep(uniform(1, 3))

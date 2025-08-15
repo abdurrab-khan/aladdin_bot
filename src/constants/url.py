@@ -1,5 +1,4 @@
 from typing import Dict
-from unicodedata import category
 
 from ..constants.const import FLIPKART_CATEGORY, INDEX, CATEGORY_ID
 from ..lib.types import ProductCategories, ProductUrlDetailsValue, Websites
@@ -16,6 +15,16 @@ def getIndex(index: str):
 
 def getCategoryId(categoryId: str):
     return CATEGORY_ID.format(category_id=categoryId)
+
+
+def formatCategoryIdAndIndex(categoryId: str | None, indexId: str | None) -> str:
+    if categoryId is None and indexId is None:
+        return ""
+
+    index = INDEX.format(index=indexId) if indexId else ""
+    category = CATEGORY_ID.format(category_id=categoryId) if categoryId else ""
+
+    return (index + category)
 
 
 def getFlipkartCategory(categoryName: str, categoryId: str):
@@ -148,7 +157,7 @@ PRODUCT_URL_DETAILS: Dict[ProductCategories, ProductUrlDetailsValue] = {
     },
     ProductCategories.JACKET: {
         "min_price": 100,
-        "max_price": 2000,
+        "max_price": 2500,
         "amazon_url_props": {
             "category_id": getCategoryId("1968024031"),
             "index": getIndex("fashion")
@@ -287,7 +296,7 @@ PRODUCT_URL_DETAILS: Dict[ProductCategories, ProductUrlDetailsValue] = {
     # HOME_APPLIANCES - SECTION
     ProductCategories.HOME_APPLIANCES: {
         "min_price": 100,
-        "max_price": 1500,
+        "max_price": 3500,
         "amazon_url_props": {
             "category_id": getCategoryId("976442031"),
             "index": getIndex("kitchen")
@@ -301,7 +310,7 @@ PRODUCT_URL_DETAILS: Dict[ProductCategories, ProductUrlDetailsValue] = {
     # GADGETS - SECTION
     ProductCategories.GADGETS: {
         "min_price": 50,
-        "max_price": 2500,
+        "max_price": 3500,
         "amazon_url_props": {
             "category_id": getCategoryId("976442031"),
             "index": getIndex("")
@@ -314,7 +323,7 @@ PRODUCT_URL_DETAILS: Dict[ProductCategories, ProductUrlDetailsValue] = {
 
     # MOBILE ACCESSORIES
     ProductCategories.MOBILE_ACCESSORIES: {
-        "min_price": 50,
+        "min_price": 200,
         "max_price": 2000,
         "amazon_url_props": {
             "category_id": getCategoryId("976419031"),
@@ -328,7 +337,7 @@ PRODUCT_URL_DETAILS: Dict[ProductCategories, ProductUrlDetailsValue] = {
 
     # COMPUTER ACCESSORIES
     ProductCategories.COMPUTER_ACCESSORIES: {
-        "min_price": 100,
+        "min_price": 200,
         "max_price": 2000,
         "amazon_url_props": {
             "category_id": getCategoryId("976419031"),
