@@ -2,18 +2,13 @@ name: Aladdin Scheduled Task
 
 on:
   schedule:
-    # 6:00 AM IST = 12:30 AM UTC 
-    - cron: '30 0 * * *'
-    # 10:00 PM IST = 4:30 PM UTC
-    - cron: '30 16 * * *'
+      - cron: "0 */6 * * *" 
   workflow_dispatch:
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
-
-    # Run only when on 'feat/supabase' branch
-    if: github.ref == 'refs/heads/feat/supabase'
+    timeout-minutes: 40  # hard limit to prevent exceeding 40 minutes
 
     env:
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -26,10 +21,10 @@ jobs:
 
 
     steps:
-      - name: Checkout feat/supabase branch
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          ref: feat/supabase
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5

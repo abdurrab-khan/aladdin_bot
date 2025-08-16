@@ -12,7 +12,6 @@ from ...constants.url import PLATFORM_IDS, PRODUCT_URL_DETAILS
 
 from selenium.webdriver.remote.webelement import WebElement
 from ...helpers.helper_functions import HelperFunctions
-from selenium.common.exceptions import NoSuchElementException
 from ...lib.types import Product, ProductCategories, ProductKey, Websites
 
 
@@ -21,8 +20,16 @@ def increaseImageQuality(image_url: str, website: Websites) -> str:
         return image_url.replace('q_60', 'q_100').replace('w_210', 'w_510')
     elif website == Websites.AMAZON:
         return image_url.replace('_AC_UL320_', '_AC_UL720_')
+    elif website == Websites.FLIPKART:
+        import re
 
-    return image_url
+        # Replace the size (e.g /612/612 -> /720/720)
+        url = re.sub(r"image/\d+/\d+/", f"image/720/720/", image_url)
+
+        # Replace the quality (e.g. q=70 → q=100)
+        url = re.sub(r"q=\d+", f"q=100", image_url)
+
+        return url
 
 
 class DataProcessingHelper:
@@ -53,7 +60,10 @@ class DataProcessingHelper:
                 formatted_data = DataProcessingHelper.format_extracted_data(
                     key, element, website_name)
 
-                if formatted_data is None and not (website_name == Websites.FLIPKART and key == "product_url"):
+                isProductValid = formatted_data is None and not (
+                    website_name == Websites.FLIPKART and (key == "rating" or key == "rating_count"))
+
+                if isProductValid:
                     return None
 
                 if key == "product_image":
@@ -65,6 +75,11 @@ class DataProcessingHelper:
             except Exception as e:
                 error(f"Error extracting {key}: {str(e)}")
                 return None
+
+        if USER_ID is None or ASSOCIATED_APP is None:
+            error(
+                "💀 USER_ID and ASSOCIATED_APP is None check immediately what's wrong...")
+            return None
 
         if product_details:
             product_details["user_id"] = USER_ID
@@ -97,7 +112,7 @@ class DataProcessingHelper:
             if element is None:
                 return None
 
-            return element if key == "product_image" else DataProcessingHelper.url_shorter(str(element), website_name)
+            return element if key == "product_image" else element
         else:
             elem = element_data.get_attribute("innerHTML")
 

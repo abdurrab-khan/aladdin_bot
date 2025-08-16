@@ -15,12 +15,12 @@ PRODUCT_DETAILS: Dict[Websites, Dict[ProductKey, List[str]]] = {
         "product_url": ["a.a-link-normal.s-line-clamp-2.s-link-style.a-text-normal", "a.a-link-normal"],
     },
     Websites.FLIPKART: {
-        "name": ["span.VU-ZEz", "a.wjcEIp", "div.WKTcLC"],
+        "name": ["span.VU-ZEz", "a.wjcEIp", "a.WKTcLC"],
         "price": ["div.hl05eU div.yRaY8j"],
         "discount_price": ["div.hl05eU div.Nx9bqj"],
         "rating": ["div.XQDdHH"],
         "rating_count": ["span.Wphh3N"],
-        "product_image": ["div._8id3KM img", "div._4WELSP img"],
+        "product_image": ["div._8id3KM img", "div._4WELSP img", "div.gqcSqV.YGE0gZ img"],
         "product_url": ["a.rPDeLR", "a.wjcEIp"],
     },
     Websites.MYNTRA: {

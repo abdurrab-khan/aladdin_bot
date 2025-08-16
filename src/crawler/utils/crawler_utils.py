@@ -149,15 +149,36 @@ class WebsiteScraper:
         url, price = (product_details.get(
             k, None) for k in ("product_url", "price"))
 
+        # Checking in the flipkart is rating and rating count is there or not.
+        flipkartHasRating = (self.website_name == Websites.FLIPKART and (
+            product_details["rating"] is not None or product_details["rating_count"] is not None))
+
         # Checking -- Whether product is valid or not.
-        isProductValid = DataProcessingHelper.is_product_valid(
-            url, price, self.redis_client, self.category) and self.discount_analyzer.is_best_discount(product_details) and (not self.processed_product_urls.__contains__(url))
+        isProductValid = (
+            DataProcessingHelper.is_product_valid(
+                url, price, self.redis_client, self.category)
+            and (
+                (self.website_name !=
+                 Websites.FLIPKART and self.discount_analyzer.is_best_discount(
+                     product_details)
+                 )
+                or (
+                    (self.website_name == Websites.FLIPKART and flipkartHasRating
+                     and self.discount_analyzer.is_best_discount(product_details))
+                ) or (
+                    self.website_name == Websites.FLIPKART and not flipkartHasRating
+                )
+            )
+            and (not self.processed_product_urls.__contains__(url))
+        )
 
         if not isProductValid:
             return None
 
-        info(
-            f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details['rating']} | {self.website_name.value}")
+        if product_details['rating'] is not None:
+            info(
+                f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['price']} | 💰 Discount Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details["rating"]} | 📱 {self.website_name.value}")
+
         self.processed_product_urls.add(url)
 
         return product_details

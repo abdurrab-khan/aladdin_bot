@@ -14,7 +14,7 @@ from ..db.redis import RedisDB
 from ..lib.types import Product, Websites, ProductCategories
 from ..utils.best_discount_analyzer import BestDiscountAnalyzer
 
-MAX_PRODUCT_TO_SEND = 15
+MAX_PRODUCT_TO_SEND = 20
 
 # <================> HELPER FUNCTIONS <================>
 
@@ -43,7 +43,6 @@ def getFlipkartUrl(query: str, min_price: int, max_price: int, category: str) ->
 
 
 class Utils:
-    # Utility functions
     @staticmethod
     def get_products_from_web(urls: Dict[ProductCategories, Dict[Websites, str]], redis: RedisDB) -> List[Product]:
         """

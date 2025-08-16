@@ -4,7 +4,7 @@ from ..constants.const import FLIPKART_CATEGORY, INDEX, CATEGORY_ID
 from ..lib.types import ProductCategories, ProductUrlDetailsValue, Websites
 
 
-MAX_PRODUCTS_PER_WEBSITE = 25
+MAX_PRODUCTS_PER_WEBSITE = 30
 
 # UTILS FUNCTIONS
 
@@ -37,7 +37,7 @@ BASE_URLS: Dict[Websites, str] = {
     Websites.AMAZON: (
         "https://www.amazon.in/s?k={query}{index}"
         "{category_id}%2C"
-        "%2Cp_n_pct-off-with-tax%3A27060457031"
+        "%2Cp_n_pct-off-with-tax%3A2665401031"
         "%2Cp_n_availability%3A1318485031"
         "%2Cp_72%3A1318476031"
         "&dc&ref=sr_nr_p_72_1"
@@ -47,20 +47,20 @@ BASE_URLS: Dict[Websites, str] = {
         "https://www.flipkart.com/{category}{query}"
         "&marketplace=FLIPKART"
         "&as-show=on&as=off"
-        "&p[]=facets.discount_range_v1%5B%5D=70%25+or+more"
+        "&p[]=facets.discount_range_v1%255B%255D%3D50%2525%2Bor%2Bmore"
         "&p[]=facets.rating%5B%5D=3%E2%98%85+%26+above"
         "&p[]=facets.ideal_for%5B%5D=Men"
         "&p[]=facets.price_range.from={min_price}"
         "&p[]=facets.price_range.to={max_price}"
     ),
-    Websites.MYNTRA: "https://www.myntra.com/{query}?f=Gender%3Amen%2Cmen%20women&rawQuery={query}&rf=Discount%20Range%3A80.0_100.0_80.0%20TO%20100.0%3A%3APrice%3A250.0_{max_price}.0_250.0%20TO%20{max_price}.0"
+    # Websites.MYNTRA: "https://www.myntra.com/{query}?f=Gender%3Amen%2Cmen%20women&rawQuery={query}&rf=Discount%20Range%3A80.0_100.0_80.0%20TO%20100.0%3A%3APrice%3A250.0_{max_price}.0_250.0%20TO%20{max_price}.0"
 }
 
 # SUPABASE PLATEFORM_IDS
 PLATFORM_IDS = {
     "amazon": "55a353b7-5d4a-455f-b600-2803d7e545f3",
     "flipkart": "3a09abed-0d57-4914-a535-ec8fedbe9c71",
-    "myntra": "cf0e243b-ab7b-40b0-8d33-fe56f75101e5"
+    # "myntra": "cf0e243b-ab7b-40b0-8d33-fe56f75101e5"
 }
 
 # All Supported Websites based on category
@@ -68,7 +68,7 @@ SUPPORTED_WEBSITES = {
     "fashion": [
         Websites.AMAZON,
         Websites.FLIPKART,
-        Websites.MYNTRA,
+        # Websites.MYNTRA,
     ],
     "kitchenware": [
         Websites.AMAZON,

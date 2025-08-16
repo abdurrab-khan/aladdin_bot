@@ -34,7 +34,7 @@ class MyntraScraper(WebsiteScraper):
         Returns:
             BeautifulSoup: The main container element.
         """
-        return super().get_product_container(Websites.MYNTRA, url)
+        return super().get_product_container(url)
 
     def extract_products(self, container: WebElement) -> List[Product] | None:
         """
