@@ -89,7 +89,7 @@ class FlipkartScraper(WebsiteScraper):
                 continue
 
             info(
-                f"✅ Best Deal found! 🛍️  {product['name']} | 💰 Price: ₹{product['price']} | 💰 Discount Price: ₹{product['discount_price']} | ⭐ Rating: {product["rating"]} | 📱 {self.website_name.value}")
+                f"✅ Best Deal found! 🛍️  {product['name']} | 💰 Price: ₹{product['price']} | 💰 Discount Price: ₹{product['discount_price']} | ⭐ Rating: {product['rating']} | 📱 {self.website_name.value}")
 
             product_without_rating.append(product)
 

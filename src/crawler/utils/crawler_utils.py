@@ -177,7 +177,7 @@ class WebsiteScraper:
 
         if product_details['rating'] is not None:
             info(
-                f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['price']} | 💰 Discount Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details["rating"]} | 📱 {self.website_name.value}")
+                f"✅ Best Deal found! 🛍️  {product_details['name']} | 💰 Price: ₹{product_details['price']} | 💰 Discount Price: ₹{product_details['discount_price']} | ⭐ Rating: {product_details['rating']} | 📱 {self.website_name.value}")
 
         self.processed_product_urls.add(url)
 
