@@ -1,6 +1,6 @@
 from os import getenv
 from redis import Redis
-from typing import Optional
+from typing import Awaitable, Optional
 from logging import warning, error, info
 from redis.exceptions import ConnectionError, RedisError, MaxConnectionsError
 
@@ -70,7 +70,7 @@ class RedisDB:
 
     def __exit__(self, exc_type, exc_value, traceback):
         try:
-            if self.client:
+            if self.client and self.pool:
                 self.pool.disconnect()
                 self.client = None
                 self.pool = None
@@ -118,7 +118,7 @@ class RedisDB:
         return list(self.client.smembers(key))
 
     @redis_call
-    def add_to_set(self, key: str, member: str | list, expire_time: Optional[int] = None) -> int:
+    def add_to_set(self, key: str, member: str | list, expire_time: Optional[int] = None) -> int | Awaitable[int]:
         """
         Set the value in redis database and store it in a set.
 
@@ -131,6 +131,10 @@ class RedisDB:
         return:
             None
         """
+        if self.client is None:
+            warning("⚠️ Redis client is not connected.")
+            return 0
+
         member = [member] if isinstance(member, str) else member
         result = self.client.sadd(key, *member)
 
@@ -140,21 +144,7 @@ class RedisDB:
         return result
 
     @redis_call
-    def remove_to_set(self, key: str, member: str) -> int:
-        """
-        Remove the giver member from the set stored at key.
-
-        args:
-            key (str): The key of the set.
-            member (str): The member to remove.
-
-        return:
-            None
-        """
-        return self.client.srem(key, member)
-
-    @redis_call
-    def remove_set(self, key: str) -> int:
+    def remove_set(self, key: str) -> int | Awaitable[int]:
         """
         Remove the set stored at key.
 
@@ -164,6 +154,10 @@ class RedisDB:
         return:
             None
         """
+        if self.client is None:
+            warning("⚠️ Redis client is not connected.")
+            return 0
+
         return self.client.delete(key)
 
     @redis_call
@@ -179,6 +173,10 @@ class RedisDB:
         return:
             bool: True if the URL is found, False otherwise.
         """
+        if not self.client:
+            warning("⚠️ Redis client is not connected.")
+            return False
+
         cursor = 0
 
         while True:

@@ -4,3 +4,5 @@
 *.tldr
 __pycache__
 images
+
+myvenv
