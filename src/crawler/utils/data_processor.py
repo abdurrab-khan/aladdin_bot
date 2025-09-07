@@ -1,7 +1,7 @@
 from logging import error
-from re import search
+from re import search, sub
 from typing import Optional, cast
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlparse
 
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -21,13 +21,13 @@ def increaseImageQuality(image_url: str, website: Websites) -> str:
     elif website == Websites.AMAZON:
         return image_url.replace('_AC_UL320_', '_AC_UL720_')
     elif website == Websites.FLIPKART:
-        import re
+        encoded_url = unquote(image_url)
 
         # Replace the size (e.g /612/612 -> /720/720)
-        url = re.sub(r"image/\d+/\d+/", f"image/720/720/", image_url)
+        url = sub(r"/image/[0-9]+/[0-9]+", f"/image/720/720", encoded_url)
 
         # Replace the quality (e.g. q=70 → q=100)
-        url = re.sub(r"q=\d+", f"q=100", image_url)
+        url = sub(r"q=\d+", f"q=100", url)
 
         return url
 
@@ -112,7 +112,7 @@ class DataProcessingHelper:
             if element is None:
                 return None
 
-            return element if key == "product_image" else element
+            return element if key == "product_image" else DataProcessingHelper.url_shorter(element, website_name)
         else:
             elem = element_data.get_attribute("innerHTML")
 
@@ -178,11 +178,10 @@ class DataProcessingHelper:
         formatted_url = None
 
         if website_name == Websites.AMAZON:
-            product_id = DataProcessingHelper.extract_amazon_product_id(url)
-            formatted_url = f"https://www.amazon.in/dp/{product_id}" if product_id is not None else None
+            return DataProcessingHelper.parse_amazon_url(url)
 
         elif website_name == Websites.FLIPKART:
-            formatted_url = f"https://www.flipkart.com{url.split('?')[0]}"
+            return DataProcessingHelper.parse_flipkart_url(url)
 
         elif website_name == Websites.MYNTRA:
             formatted_url = f"https://www.myntra.com/{url}"
@@ -190,24 +189,42 @@ class DataProcessingHelper:
         return unquote(formatted_url, encoding="utf-8") if formatted_url is not None else formatted_url
 
     @staticmethod
-    def extract_amazon_product_id(url) -> str | None:
-        """
-        Extract the product id of Amazon from product url.
-        Args:
-            url (str): The original URL.
+    def parse_amazon_url(url: str) -> str | None:
+        click_pattern = r'/sspa/click'  # Url with click href
+        url_pattern = r'/dp/([a-zA-Z0-9]{10})'  # Url with dp/product_id href
 
-        Returns:
-            str: The product id
-        """
+        # Decode the url
         decoded_url = unquote(url)
-        pattern = r'/dp/([a-zA-Z0-9]{10})'
 
-        match = search(pattern, decoded_url)
+        # Parsed_url
+        parsed_url = urlparse(decoded_url)
+        formatted_url = parsed_url.scheme + "://" + parsed_url.netloc
 
-        if match:
-            return match.group(1)
-        else:
-            return None
+        # Search /dp/product_id
+        if search(url_pattern, decoded_url):
+            try:
+                parse_query_url = urlparse(parse_qs(urlparse(url).query)['url'][0]).path if search(
+                    click_pattern, decoded_url) else parsed_url.path
+
+                # Remove /ref=....
+                clean_url = sub(r"/ref=[^/]+", "", parse_query_url)
+
+                # Concat clean url into formatted_url
+                formatted_url += clean_url
+            except KeyError as k:
+                return None
+
+        return formatted_url
+
+    @staticmethod
+    def parse_flipkart_url(url: str) -> str | None:
+        encoded_url = unquote(url)
+
+        # Parse url
+        parsed_url = urlparse(encoded_url)
+
+        # Return parsed url
+        return parsed_url.scheme + "://" + parsed_url.netloc + parsed_url.path
 
     @staticmethod
     def extract_product_detail(card: WebElement, selector: str):

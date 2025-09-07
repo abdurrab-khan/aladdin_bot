@@ -105,3 +105,19 @@ class Crawler:
         Clean up resources.
         """
         self.driver_utility.close_driver()
+
+
+# For Testing Purpose
+# if __name__ == "__main__":
+#     with RedisDB() as r:
+#         if not isinstance(r, RedisDB):
+#             print("❌ An error occurred due redis db.")
+#             exit(1)
+
+#         dis_analyzer = BestDiscountAnalyzer()
+#         crawler = Crawler(r, dis_analyzer)
+
+#         products = crawler.get_product(
+#             Websites.FLIPKART, ProductCategories.JEANS, "https://www.flipkart.com/search?q=jeans&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off")
+
+#         print("Products are: ", products)
